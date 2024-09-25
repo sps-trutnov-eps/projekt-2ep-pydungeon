@@ -1,32 +1,65 @@
 import random, numpy
-size = 6
+size = 8
+cordinates = [round((size-1)/2),round((size-1)/2)] #current cordinates, starting at middle
+middlecords = [round((size-1)/2),round((size-1)/2)] #middle of map
 
 def GenerateMap(size):
     global map
+    #generates matrix SIZE X SIZE filled with 0
     map = numpy.zeros((size, size), dtype=numpy.int8, order='C')
+    #dtype should be changed to bool after finishing
+
 
 def PrintMap():
     print(map)
     print()
 
-def MakeRoom(cords):
-    map[cords[0],cords[1]] = 1
+
+def MakeRoom(MakeRoomCords):
+    map[MakeRoomCords[0],MakeRoomCords[1]] = 1
+    #Makes room (turns 0 into 1) at cords
+
 
 def GenerateLevel(LevelLength):
-    middlecords = [round((size-1)/2),round((size-1)/2)]
+    global cordinates
+    MakeRoom(middlecords)
+    #generates starting room in the middle
 
-    for lenght in range(LevelLength):
-        direction = random.randint(1,4)
-        MakeRoom(((middlecords[0] + direction),
-                 (middlecords[1] + direction)))
+    for i in range(LevelLength): #Makes room for every LevelLenght
+        direction = random.randint(1,4)  #Choose random direction (cardinal) in which to generate the next room
+
+        match direction: #matches the direction to logical operation
+            case 1:
+                cordinates[0] -= 1 #moves the coords 1 room NORTH /\
+                CheckIfCordinateIsInBound(cordinates)
+                MakeRoom(cordinates)
+
+            case 2:
+                cordinates[1] += 1 #moves the coords 1 room EAST >
+                CheckIfCordinateIsInBound(cordinates)
+                MakeRoom(cordinates)
+
+            case 3:
+                cordinates[0] += 1 #moves the coords 1 room SOUTH \/
+                CheckIfCordinateIsInBound(cordinates)
+                MakeRoom(cordinates)
+
+            case 4:
+                cordinates[1] -= 1 #moves the coords 1 room WEST <
+                CheckIfCordinateIsInBound(cordinates)
+                MakeRoom(cordinates)
+
+def CheckIfCordinateIsInBound(checkedCord):
+    global cordinates
+    if checkedCord[0] > (size - 1) or checkedCord[0] < 1 or checkedCord[1] < 1 or checkedCord[1] > (size - 1):
+        cordinates = [round((size-1)/2),round((size-1)/2)] 
+        #if room isnt in map switches the coordinates to middle
+        #NOTE: DONT USE MIDDLECORDS, use middlecords expresion to prevent change of middlecord
 
 
-GenerateMap(5)
-GenerateLevel(3)
+GenerateMap(size)
+GenerateLevel(30)
 PrintMap()
-'''
-    1N
-  4W  2E
-    3S
-'''
+
+
 
