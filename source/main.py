@@ -19,8 +19,8 @@ class Projectile:
         self.projectileHitbox = pygame.Rect(int(self.x), int(self.y), self.radius, self.radius) #creates rectangle hitbox around projectile
         pygame.draw.circle(window, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
 
-    def despawn(self, res_x, res_y): # despawn kulky m
-        return self.x < 0 or self.x > res_x or self.y < 0 or self.y > res_y
+    def despawn(self, resolutionX, resolutionY): # despawn kulky m
+        return self.x < 0 or self.x > resolutionX or self.y < 0 or self.y > resolutionY
     
 
 
@@ -28,16 +28,18 @@ class Projectile:
 
 def Main():
     pygame.init()
-    res_x = 1600
-    res_y = 1200
-    window = pygame.display.set_mode((res_x, res_y))
+    resolutionX = 1600
+    resolutionY = 1200
+    window = pygame.display.set_mode((resolutionX, resolutionY))
     pygame.display.set_caption("Top Down Shooter")
     clock = pygame.time.Clock()
 
 
-    x_player = 320
-    y_player = 320
+    poziceHraceX = resolutionX/2
+    poziceHraceY = 320
     rychlostHrace = 5
+    velikostHrace = 60
+    hracRect = pygame.Rect(poziceHraceX, poziceHraceY, velikostHrace, velikostHrace)
 
     projektily = []
 
@@ -66,10 +68,13 @@ def Main():
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             # Vypočítání úhlu střelby
-            rel_x, rel_y = mouse_x - (x_player + 30), mouse_y - (y_player + 30)
+            rel_x, rel_y = mouse_x - (hracRect[0] + 30), mouse_y - (hracRect[1] + 30)
             angle = math.atan2(rel_y, rel_x)
-            projektily.append(Projectile(x_player + 30, y_player + 30, angle, 5))
+            projektily.append(Projectile(hracRect[0] + 30, hracRect[1] + 30, angle, 5))
             last_shot_time = current_time  # čas posledního výstřelu
+
+        #ulozi pozici hrace pred pohybem
+        lastPlayerPosition = hracRect
 
         # Pohyb hráče
         key_press = pygame.key.get_pressed()
@@ -77,29 +82,34 @@ def Main():
             sys.exit()
 
         if key_press[pygame.K_w]:
-            y_player -= rychlostHrace
+            hracRect[1] -= rychlostHrace
         if key_press[pygame.K_s]:
-            y_player += rychlostHrace
+            hracRect[1] += rychlostHrace
         if key_press[pygame.K_a]:
-            x_player -= rychlostHrace
+            hracRect[0] -= rychlostHrace
         if key_press[pygame.K_d]:
-            x_player += rychlostHrace
+            hracRect[0] += rychlostHrace
 
 
         window.fill(black)
 
         #draw walls
-        leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, res_y/2 - holeSize/2))
-        topLeftWall = pygame.draw.rect(window, wallColour, (0,0, res_x/2 - holeSize/2, wallWidth))
+        leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, resolutionY/2 - holeSize/2))
+        topLeftWall = pygame.draw.rect(window, wallColour, (0,0, resolutionX/2 - holeSize/2, wallWidth))
 
-        topRightWall = pygame.draw.rect(window, wallColour, (res_x/2 + holeSize/2, 0, res_x/2 - holeSize/2, wallWidth))
-        rightTopWall = pygame.draw.rect(window, wallColour, (res_x - wallWidth, 0, wallWidth, res_y/2 - holeSize/2))
+        topRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, 0, resolutionX/2 - holeSize/2, wallWidth))
+        rightTopWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, 0, wallWidth, resolutionY/2 - holeSize/2))
 
-        rightDownWall = pygame.draw.rect(window, wallColour, (res_x - wallWidth, res_y/2 + holeSize/2, wallWidth, res_y/2 - holeSize/2))
-        downRightWall = pygame.draw.rect(window, wallColour, (res_x/2 + holeSize/2, res_y - wallWidth, res_x/2 - wallWidth/2, wallWidth))
+        rightDownWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+        downRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, resolutionY - wallWidth, resolutionX/2 - wallWidth/2, wallWidth))
 
-        LefDowntWall = pygame.draw.rect(window, wallColour, (0, res_y/2 + holeSize/2, wallWidth, res_y/2 - holeSize/2))
-        DownLeftWall = pygame.draw.rect(window, wallColour, (0, res_y - wallWidth, res_x/2 - holeSize/2, wallWidth))
+        LefDowntWall = pygame.draw.rect(window, wallColour, (0, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+        DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
+
+        #Player-Wall collision
+
+        if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
+            hracRect = lastPlayerPosition
 
 
         #check for projectile collisions
@@ -113,10 +123,12 @@ def Main():
                 projektily.remove(projektil)
 
             #out of bound check
-            if projektil.despawn(res_x, res_y):
+            if projektil.despawn(resolutionX, resolutionY):
                 projektily.remove(projektil)
 
-        pygame.draw.rect(window, (255, 125, 255), (x_player, y_player, 60, 60))
+        pygame.draw.rect(window, (255, 125, 255), hracRect)
+        
+
         pygame.display.flip()
 
 Main()
