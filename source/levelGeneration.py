@@ -57,9 +57,8 @@ def CheckIfCordinateIsInBound(checkedCord):
         #NOTE: DONT USE MIDDLECORDS, use middlecords expresion to prevent change of middlecord
 
 
+
 GenerateMap(size)
 GenerateLevel(30)
-PrintMap()
-
 
 

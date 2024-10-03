@@ -2,7 +2,9 @@ import pygame
 import sys
 import math
 import copy
+import levelGeneration 
 
+print(levelGeneration.map)
 
 class Projectile:
     def __init__(self, x, y, angle, radius):
@@ -24,7 +26,17 @@ class Projectile:
         return self.x < 0 or self.x > resolutionX or self.y < 0 or self.y > resolutionY
     
 
+class Roomka:
+    def __init__(self, cordX, cordY, type):
+        self.cordX = cordX
+        self.cordY = cordY
+        self.type = type
 
+    def moveToDifferentRoom(self):
+        pass
+    
+    def DrawRoom(self, cordX, cordY):
+        drawRoom()
 #####################################
 
 def Main():
@@ -52,6 +64,9 @@ def Main():
 
     black = (0, 0, 0)
     holeSize = 250
+
+    currentRoom = copy.copy(levelGeneration.middlecords)
+
 
     while True:
         clock.tick(60)
@@ -93,29 +108,32 @@ def Main():
 
         #kontrola out of bounds hrace
         if 0 > prostredekHrace[0]:
-            print("levy vychod")
+            currentRoom[0] -= 1 #levy vychod
         elif prostredekHrace[0] > resolutionX:
-            print("pravy vychod")
+            currentRoom[0] += 1 #pravy vychod
         elif 0 > prostredekHrace[1]:
-            print("horni vychod")
+            currentRoom[1] += 1 #horni vychod
         elif prostredekHrace[1] > resolutionY:
-            print("dolni vychod")
+            currentRoom[1] -= 1 #dolni vychod
 
 
-        window.fill(black)
+        def DrawRoom():
+            global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall
+            window.fill(black)
 
-        #draw walls
-        leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, resolutionY/2 - holeSize/2))
-        topLeftWall = pygame.draw.rect(window, wallColour, (0,0, resolutionX/2 - holeSize/2, wallWidth))
+            #draw walls
+            leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, resolutionY/2 - holeSize/2))
+            topLeftWall = pygame.draw.rect(window, wallColour, (0,0, resolutionX/2 - holeSize/2, wallWidth))
 
-        topRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, 0, resolutionX/2 - holeSize/2, wallWidth))
-        rightTopWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, 0, wallWidth, resolutionY/2 - holeSize/2))
+            topRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, 0, resolutionX/2 - holeSize/2, wallWidth))
+            rightTopWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, 0, wallWidth, resolutionY/2 - holeSize/2))
 
-        rightDownWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
-        downRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, resolutionY - wallWidth, resolutionX/2 - wallWidth/2, wallWidth))
+            rightDownWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+            downRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, resolutionY - wallWidth, resolutionX/2 - wallWidth/2, wallWidth))
 
-        LefDowntWall = pygame.draw.rect(window, wallColour, (0, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
-        DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
+            LefDowntWall = pygame.draw.rect(window, wallColour, (0, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+            DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
+        DrawRoom()
 
         #Player-Wall collision
         #kdyz se hrac a zed overlapne tak vrati hrace do posledni ulozeny pozice
