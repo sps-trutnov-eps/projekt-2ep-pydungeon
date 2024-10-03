@@ -53,8 +53,6 @@ def Main():
     black = (0, 0, 0)
     holeSize = 250
 
-
-
     while True:
         clock.tick(60)
 
@@ -63,11 +61,13 @@ def Main():
                 pygame.quit()
                 sys.exit()
 
-        # Získání aktuálního času
+        # Získání aktuálního času a keypressed
         current_time = pygame.time.get_ticks()
+        key_press = pygame.key.get_pressed()
 
-        #ulozeni hracovy pozice 
+        #update hracovych pozici
         ulozenaPoziceHrace = copy.copy(hracRect)
+        prostredekHrace = (hracRect[0] + velikostHrace/2, hracRect[1] + velikostHrace/2)
 
         # Střelba projektilů při kliknutí myší
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
@@ -79,7 +79,6 @@ def Main():
             last_shot_time = current_time  # čas posledního výstřelu
 
         # Pohyb hráče
-        key_press = pygame.key.get_pressed()
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
 
@@ -93,9 +92,14 @@ def Main():
             hracRect[0] += rychlostHrace
 
         #kontrola out of bounds hrace
-        print(hracRect[0])
-        if 0 < hracRect[0] > resolutionX:
-            print("S")
+        if 0 > prostredekHrace[0]:
+            print("levy vychod")
+        elif prostredekHrace[0] > resolutionX:
+            print("pravy vychod")
+        elif 0 > prostredekHrace[1]:
+            print("horni vychod")
+        elif prostredekHrace[1] > resolutionY:
+            print("dolni vychod")
 
 
         window.fill(black)
