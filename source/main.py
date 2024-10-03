@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import copy
 
 
 class Projectile:
@@ -40,10 +41,9 @@ def Main():
     rychlostHrace = 5
     velikostHrace = 60
     hracRect = pygame.Rect(poziceHraceX, poziceHraceY, velikostHrace, velikostHrace)
+    ulozenaPoziceHrace = pygame.Rect(0, 0, 0, 0) 
 
     projektily = []
-
-
     cooldown = 200  # cooldown zbraně
     last_shot_time = 0 
 
@@ -52,6 +52,8 @@ def Main():
 
     black = (0, 0, 0)
     holeSize = 250
+
+
 
     while True:
         clock.tick(60)
@@ -64,6 +66,9 @@ def Main():
         # Získání aktuálního času
         current_time = pygame.time.get_ticks()
 
+        #ulozeni hracovy pozice 
+        ulozenaPoziceHrace = copy.copy(hracRect)
+
         # Střelba projektilů při kliknutí myší
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -72,9 +77,6 @@ def Main():
             angle = math.atan2(rel_y, rel_x)
             projektily.append(Projectile(hracRect[0] + 30, hracRect[1] + 30, angle, 5))
             last_shot_time = current_time  # čas posledního výstřelu
-
-        #ulozi pozici hrace pred pohybem
-        lastPlayerPosition = hracRect
 
         # Pohyb hráče
         key_press = pygame.key.get_pressed()
@@ -89,6 +91,11 @@ def Main():
             hracRect[0] -= rychlostHrace
         if key_press[pygame.K_d]:
             hracRect[0] += rychlostHrace
+
+        #kontrola out of bounds hrace
+        print(hracRect[0])
+        if 0 < hracRect[0] > resolutionX:
+            print("S")
 
 
         window.fill(black)
@@ -107,11 +114,10 @@ def Main():
         DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
 
         #Player-Wall collision
-
+        #kdyz se hrac a zed overlapne tak vrati hrace do posledni ulozeny pozice
         if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-            hracRect = lastPlayerPosition
-
-
+            hracRect = ulozenaPoziceHrace
+            
         #check for projectile collisions
         for projektil in projektily[:]:
             projektil.movement()
