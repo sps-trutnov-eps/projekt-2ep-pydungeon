@@ -41,8 +41,8 @@ class Roomka:
 
 def Main():
     pygame.init()
-    resolutionX = 1600
-    resolutionY = 1200
+    resolutionX = 1920
+    resolutionY = 1080
     window = pygame.display.set_mode((resolutionX, resolutionY))
     pygame.display.set_caption("Top Down Shooter")
     clock = pygame.time.Clock()
