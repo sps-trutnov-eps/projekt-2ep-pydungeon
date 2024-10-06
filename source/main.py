@@ -37,6 +37,55 @@ class Roomka:
     
     def DrawRoom(self, cordX, cordY):
         drawRoom()
+
+
+
+class Rammer:
+    def __init__(self, x, y, rychlost):
+        self.x = x
+        self.y = y
+        self.rychlost = rychlost
+
+    def movement(self, poziceHraceX, poziceHraceY):
+        if self.x > poziceHraceX:
+            self.x -= self.rychlost
+        elif self.x < poziceHraceX:
+            self.x += self.rychlost
+        
+        if self.y > poziceHraceY:
+            self.y -= self.rychlost
+        elif self.y < poziceHraceY:
+            self.y += self.rychlost      
+    
+    def draw(self, window):
+        pygame.draw.rect(window, (0, 100, 255), (self.x, self.y, 60, 60))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rammers = []
+rammers.append(Rammer(300, 300, 3))
+
+
+
+
+
+
+
+
 #####################################
 
 def Main():
@@ -153,6 +202,10 @@ def Main():
             #out of bound check
             if projektil.despawn(resolutionX, resolutionY):
                 projektily.remove(projektil)
+
+        for rammer in rammers:
+            rammer.draw(window)
+            rammer.movement(hracRect.x, hracRect.y)
 
         pygame.draw.rect(window, (255, 125, 255), hracRect)
         
