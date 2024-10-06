@@ -46,16 +46,16 @@ class Rammer:
         self.y = y
         self.rychlost = rychlost
 
-    def movement(self, poziceHraceX, poziceHraceY):
-        if self.x > poziceHraceX:
+    def movement(self, poziceHraceX, poziceHraceY, velikostHrace):
+        if self.x > poziceHraceX + velikostHrace - 10:
             self.x -= self.rychlost
-        elif self.x < poziceHraceX:
+        elif self.x < poziceHraceX - velikostHrace + 10:
             self.x += self.rychlost
         
-        if self.y > poziceHraceY:
+        if self.y > poziceHraceY + velikostHrace - 10:
             self.y -= self.rychlost
-        elif self.y < poziceHraceY:
-            self.y += self.rychlost      
+        elif self.y < poziceHraceY - velikostHrace + 10:
+           self.y += self.rychlost      
     
     def draw(self, window):
         pygame.draw.rect(window, (0, 100, 255), (self.x, self.y, 60, 60))
@@ -203,12 +203,12 @@ def Main():
             if projektil.despawn(resolutionX, resolutionY):
                 projektily.remove(projektil)
 
-        for rammer in rammers:
-            rammer.draw(window)
-            rammer.movement(hracRect.x, hracRect.y)
+        
 
         pygame.draw.rect(window, (255, 125, 255), hracRect)
-        
+        for rammer in rammers:
+            rammer.draw(window)
+            rammer.movement(hracRect.x, hracRect.y, velikostHrace)
 
         pygame.display.flip()
 
