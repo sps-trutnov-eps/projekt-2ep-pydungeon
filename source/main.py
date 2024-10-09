@@ -7,82 +7,147 @@ import random
 
 print(levelGeneration.map)
 
-projektily = []
-class Projectile:
-    def __init__(self, x, y, angle, radius, penetrace = 1):
-        self.x = x
-        self.y = y
-        self.angle = angle
-        self.radius = radius # velikost kulky
-        self.vel = 10  # rychlost kulky
-        self.penetrace = penetrace #how many times it can strike smt
-
-        self.rect = pygame.Rect(self.x, self.y, self.radius, self.radius)
-
-    def movement(self):
-        self.x += math.cos(self.angle) * self.vel
-        self.y += math.sin(self.angle) * self.vel
-
-    def draw(self, window):
-        if self.penetrace > 0:
-            self.projectileHitbox = pygame.Rect(int(self.x), int(self.y), self.radius, self.radius) #creates rectangle hitbox around projectile
-            pygame.draw.circle(window, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
-
-    def despawn(self, resolutionX, resolutionY): # despawn kulky m
-        return self.x < 0 or self.x > resolutionX or self.y < 0 or self.y > resolutionY
-    
-    def updateRect(self):
-        self.rect = pygame.Rect(self.x, self.y, self.radius, self.radius)
-
-
-listRammers = []
-class Rammer:
-    def __init__(self, x, y, hp, velikost = 60, rychlost = 3):
-        self.x = x
-        self.y = y
-        self.hp = hp
-        self.velikost = velikost
-        self.rychlost = rychlost
-
-
-    def movement(self, poziceHraceX, poziceHraceY, velikostHrace):
-        if self.x > poziceHraceX + velikostHrace - 10:
-            self.x -= self.rychlost
-        elif self.x < poziceHraceX - velikostHrace + 10:
-            self.x += self.rychlost
-        
-        if self.y > poziceHraceY + velikostHrace - 10:
-            self.y -= self.rychlost
-        elif self.y < poziceHraceY - velikostHrace + 10:
-           self.y += self.rychlost      
-    
-    def draw(self, window):
-        if self.hp > 0:
-            pygame.draw.rect(window, (0, 100, 255), (self.x, self.y, self.velikost, self.velikost))
-
-    def detekceKulky(self, listProjectily):
-        for i in listProjectily:
-            if pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), i.rect):  
-                if i.penetrace > 0:
-                    self.hp -= 20
-                i.penetrace -= 1
 
 #####################################
 
 def Main():
     pygame.init()
+
+    def DrawRoom():
+        global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall
+
+        #draw walls
+        leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, resolutionY/2 - holeSize/2))
+        topLeftWall = pygame.draw.rect(window, wallColour, (0,0, resolutionX/2 - holeSize/2, wallWidth))
+
+        topRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, 0, resolutionX/2 - holeSize/2, wallWidth))
+        rightTopWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, 0, wallWidth, resolutionY/2 - holeSize/2))
+
+        rightDownWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+        downRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, resolutionY - wallWidth, resolutionX/2 - wallWidth/2, wallWidth))
+
+        LefDowntWall = pygame.draw.rect(window, wallColour, (0, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
+        DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
+
+    listProjectilu = []
+    class Projectile:
+        def __init__(self, x, y, angle, radius, penetrace = 1):
+            self.x = x
+            self.y = y
+            self.angle = angle
+            self.radius = radius # velikost kulky
+            self.vel = 10  # rychlost kulky
+            self.penetrace = penetrace #how many times it can strike smt
+
+            self.rect = pygame.Rect(self.x, self.y, self.radius, self.radius)
+
+        def movement(self):
+            self.x += math.cos(self.angle) * self.vel
+            self.y += math.sin(self.angle) * self.vel
+
+        def draw(self, window):
+            if self.penetrace > 0:
+                self.projectileHitbox = pygame.Rect(int(self.x), int(self.y), self.radius, self.radius) #creates rectangle hitbox around projectile
+                pygame.draw.circle(window, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
+
+        def despawn(self, resolutionX, resolutionY): # despawn kulky m
+            return self.x < 0 or self.x > resolutionX or self.y < 0 or self.y > resolutionY
+        
+        def updateRect(self):
+            self.rect = pygame.Rect(self.x, self.y, self.radius, self.radius)
+
+    listRammers = []
+    class Rammer:
+        def __init__(self, x, y, hp, rychlost, velikost = 60,):
+            self.x = x
+            self.y = y
+            self.hp = hp
+            self.velikost = velikost
+            self.rychlost = rychlost
+
+
+        def movement(self, poziceHraceX, poziceHraceY, velikostHrace):
+            if self.x > poziceHraceX + velikostHrace - 10:
+                self.x -= self.rychlost
+            elif self.x < poziceHraceX - velikostHrace + 10:
+                self.x += self.rychlost
+            
+            if self.y > poziceHraceY + velikostHrace - 10:
+                self.y -= self.rychlost
+            elif self.y < poziceHraceY - velikostHrace + 10:
+                self.y += self.rychlost      
+        
+        def draw(self, window):
+            if self.hp > 0:
+                pygame.draw.rect(window, (0, 100, 255), (self.x, self.y, self.velikost, self.velikost))
+
+        def detekceKulky(self, listProjectily):
+            for i in listProjectily:
+                if pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), i.rect):  
+                    if i.penetrace > 0:
+                        self.hp -= 20
+                    i.penetrace -= 1
+
+    currentRoom = copy.copy(levelGeneration.middlecords)
+    listRoomek = []
+    class Room:
+        def __init__(self, cordX, cordY):
+            self.cordX = cordX
+            self.cordY = cordY
+
+
+        def drawRoom(self, listRammer, listProjectilu, hracRect):
+            window.fill(black)
+            
+            DrawRoom() #draws walls
+            #Player-Wall collision
+            #kdyz se hrac a zed overlapne tak vrati hrace do posledni ulozeny pozice
+            if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
+                hracRect = ulozenaPoziceHrace
+
+            pygame.draw.rect(window, (255, 125, 255), hracRect) #draw player
+
+            #draw rammers
+            for rammer in listRammers:
+                if rammer.hp > 0:
+                    rammer.draw(window)
+                    rammer.movement(hracRect.x, hracRect.y, velikostHrace)
+                    rammer.detekceKulky(listProjectilu)
+
+            #draw projectiles
+            #check for projectile collisions
+            for projektil in listProjectilu[:]:
+                projektil.movement()
+                projektil.draw(window)
+                projektil.updateRect()
+
+                #out of bound check
+                if projektil.despawn(resolutionX, resolutionY):
+                    listProjectilu.remove(projektil)
+
+                #wall colisions
+                # pygame.Rect.collidelist() returns zero if no collision, otherwise returns index of collision
+                if pygame.Rect.collidelist(projektil.projectileHitbox, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
+                    listProjectilu.remove(projektil)
+        
+            
+    listRoomek.append(Room(currentRoom[0], currentRoom[1]))
+
+
+
     resolutionX = 1920
     resolutionY = 1080
     window = pygame.display.set_mode((resolutionX, resolutionY))
     pygame.display.set_caption("Top Down Shooter")
     clock = pygame.time.Clock()
 
-
     poziceHraceX = resolutionX/2
     poziceHraceY = 320
     rychlostHrace = 5
     velikostHrace = 60
     hracRect = pygame.Rect(poziceHraceX, poziceHraceY, velikostHrace, velikostHrace)
+
+
     ulozenaPoziceHrace = pygame.Rect(0, 0, 0, 0) 
 
 
@@ -95,7 +160,6 @@ def Main():
     black = (0, 0, 0)
     holeSize = 250
 
-    currentRoom = copy.copy(levelGeneration.middlecords)
 
     #Rammer Spawn
     numberOfSpawnedRammers = 3
@@ -103,7 +167,8 @@ def Main():
             listRammers.append(Rammer(
             random.randint(wallWidth, resolutionX - wallWidth), #spawn cord X
             random.randint(wallWidth, resolutionY - wallWidth), #spawn cord Y (both inside the room)
-            3 #rychlost
+            50 #hp
+            ,3 #rychlost
             ))
 
 
@@ -129,7 +194,7 @@ def Main():
             # Vypočítání úhlu střelby
             rel_x, rel_y = mouse_x - (hracRect[0] + 30), mouse_y - (hracRect[1] + 30)
             angle = math.atan2(rel_y, rel_x)
-            projektily.append(Projectile(hracRect[0] + 30, hracRect[1] + 30, angle, 5))
+            listProjectilu.append(Projectile(hracRect[0] + 30, hracRect[1] + 30, angle, 5))
             last_shot_time = current_time  # čas posledního výstřelu
 
         # Pohyb hráče
@@ -155,53 +220,11 @@ def Main():
         elif prostredekHrace[1] > resolutionY:
             currentRoom[1] -= 1 #dolni vychod
 
-
-        def DrawRoom():
-            global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall
-            window.fill(black)
-
-            #draw walls
-            leftTopWall = pygame.draw.rect(window, wallColour, (0,0, wallWidth, resolutionY/2 - holeSize/2))
-            topLeftWall = pygame.draw.rect(window, wallColour, (0,0, resolutionX/2 - holeSize/2, wallWidth))
-
-            topRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, 0, resolutionX/2 - holeSize/2, wallWidth))
-            rightTopWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, 0, wallWidth, resolutionY/2 - holeSize/2))
-
-            rightDownWall = pygame.draw.rect(window, wallColour, (resolutionX - wallWidth, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
-            downRightWall = pygame.draw.rect(window, wallColour, (resolutionX/2 + holeSize/2, resolutionY - wallWidth, resolutionX/2 - wallWidth/2, wallWidth))
-
-            LefDowntWall = pygame.draw.rect(window, wallColour, (0, resolutionY/2 + holeSize/2, wallWidth, resolutionY/2 - holeSize/2))
-            DownLeftWall = pygame.draw.rect(window, wallColour, (0, resolutionY - wallWidth, resolutionX/2 - holeSize/2, wallWidth))
-        DrawRoom()
-
-
-        #Player-Wall collision
-        #kdyz se hrac a zed overlapne tak vrati hrace do posledni ulozeny pozice
-        if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-            hracRect = ulozenaPoziceHrace
-            
-        #check for projectile collisions
-        for projektil in projektily[:]:
-            projektil.movement()
-            projektil.draw(window)
-            projektil.updateRect()
-
-            #wall colisions
-            # pygame.Rect.collidelist() returns zero if no collision, otherwise returns index of collision
-            if pygame.Rect.collidelist(projektil.projectileHitbox, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-                projektily.remove(projektil)
-
-            #out of bound check
-            if projektil.despawn(resolutionX, resolutionY):
-                projektily.remove(projektil)
-
+        for room in listRoomek:
+            room.drawRoom(listRammers, listProjectilu, hracRect)
         
-        pygame.draw.rect(window, (255, 125, 255), hracRect)
 
-        for rammer in listRammers:
-            rammer.draw(window)
-            rammer.movement(hracRect.x, hracRect.y, velikostHrace)
-            rammer.detekceKulky(projektily)
+
 
         pygame.display.flip()
 
