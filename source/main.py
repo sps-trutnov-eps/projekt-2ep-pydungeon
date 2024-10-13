@@ -36,7 +36,7 @@ def Main():
             self.y = y
             self.angle = angle
             self.radius = radius # velikost kulky
-            self.vel = 10  # rychlost kulky
+            self.vel = 15  # rychlost kulky
             self.penetrace = penetrace #how many times it can strike smt
 
             self.rect = pygame.Rect(self.x, self.y, self.radius, self.radius)
