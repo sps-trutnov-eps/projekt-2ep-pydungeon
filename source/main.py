@@ -58,12 +58,14 @@ def Main():
 
     listRammers = []
     class Rammer:
-        def __init__(self, x, y, hp, rychlost, velikost = 60,):
+        def __init__(self, x, y, hp, rychlost, velikost = 60, last_shot = 0,cooldown = 1000):
             self.x = x
             self.y = y
             self.hp = hp
             self.velikost = velikost
             self.rychlost = rychlost
+            self.last_shot = last_shot
+            self.cooldown = cooldown
 
 
         def movement(self, poziceHraceX, poziceHraceY, velikostHrace):
@@ -89,9 +91,14 @@ def Main():
                     i.penetrace -= 1
 
         def utok(self, hracRect, hracZivoty):
-            while pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), hracRect):
-                hracZivoty -= 10  #damage 
-                print(hracZivoty)
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_shot >= self.cooldown:
+                if pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), hracRect):
+                    if hracZivoty > 0:
+                        hracZivoty -= 10  #damage 
+                        self.last_shot = current_time
+
+                    print(hracZivoty)
             return hracZivoty
 
 
