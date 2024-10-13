@@ -88,6 +88,17 @@ def Main():
                         self.hp -= 20
                     i.penetrace -= 1
 
+        def utok(self, hracRect, hracZivoty):
+            while pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), hracRect):
+                hracZivoty -= 10  #damage 
+                print(hracZivoty)
+            return hracZivoty
+
+
+
+
+
+
     currentRoom = copy.copy(levelGeneration.middlecords)
     listRoomek = []
     class Room:
@@ -96,7 +107,7 @@ def Main():
             self.cordY = cordY
 
 
-        def drawRoom(self, listRammer, listProjectilu, hracRect):
+        def drawRoom(self, listRammer, listProjectilu, hracRect, hracZivoty):
             window.fill(black)
             
             DrawRoom() #draws walls
@@ -113,6 +124,7 @@ def Main():
                     rammer.draw(window)
                     rammer.movement(hracRect.x, hracRect.y, velikostHrace)
                     rammer.detekceKulky(listProjectilu)
+                    hracZivoty = rammer.utok(hracRect, hracZivoty)
 
             #draw projectiles
             #check for projectile collisions
@@ -146,6 +158,7 @@ def Main():
     rychlostHrace = 5
     velikostHrace = 60
     hracRect = pygame.Rect(poziceHraceX, poziceHraceY, velikostHrace, velikostHrace)
+    hracZivoty = 100
 
 
     ulozenaPoziceHrace = pygame.Rect(0, 0, 0, 0) 
@@ -221,7 +234,7 @@ def Main():
             currentRoom[1] -= 1 #dolni vychod
 
         for room in listRoomek:
-            room.drawRoom(listRammers, listProjectilu, hracRect)
+            room.drawRoom(listRammers, listProjectilu, hracRect, hracZivoty)
         
 
 
