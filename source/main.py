@@ -98,8 +98,7 @@ def Main():
                     if hracZivoty > 0:
                         hracZivoty -= 10  #damage 
                         self.last_shot = current_time
-
-                    print(hracZivoty)
+                        print(hracZivoty)
             return hracZivoty
 
 
@@ -196,6 +195,8 @@ def Main():
 
 
     while True:
+        if hracZivoty == 0:
+            print("zemrel jsi")
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
