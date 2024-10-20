@@ -90,7 +90,8 @@ def Main():
                         self.hp -= 20
                     i.penetrace -= 1
 
-        def utok(self, hracRect, hracZivoty):
+        def utok(self, hracRect):
+            global hracZivoty
             current_time = pygame.time.get_ticks()
             if current_time - self.last_shot >= self.cooldown:
                 if pygame.Rect.colliderect(pygame.Rect(self.x, self.y, self.velikost, self.velikost), hracRect):
@@ -131,7 +132,7 @@ def Main():
                     rammer.draw(window)
                     rammer.movement(hracRect.x, hracRect.y, velikostHrace)
                     rammer.detekceKulky(listProjectilu)
-                    hracZivoty = rammer.utok(hracRect, hracZivoty)
+                    rammer.utok(hracRect)
 
             #draw projectiles
             #check for projectile collisions
@@ -165,7 +166,9 @@ def Main():
     rychlostHrace = 5
     velikostHrace = 60
     hracRect = pygame.Rect(poziceHraceX, poziceHraceY, velikostHrace, velikostHrace)
+    global hracZivoty
     hracZivoty = 100
+    
 
 
     ulozenaPoziceHrace = pygame.Rect(0, 0, 0, 0) 
@@ -194,7 +197,6 @@ def Main():
 
     while True:
         clock.tick(60)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
