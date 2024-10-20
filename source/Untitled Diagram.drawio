@@ -1,0 +1,48 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 OPR/113.0.0.0" version="24.8.0">
+  <diagram name="Page-1" id="mJAaUjJYY4eRrejlqtwD">
+    <mxGraphModel dx="701" dy="415" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ZC4Wm01_LG6_lh8ry9yx-1" target="ZC4Wm01_LG6_lh8ry9yx-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="270" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-1" value="Grid&lt;div&gt;&lt;div&gt;[0 0 0 0 0 0 0 0]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 1 1 1 0 0]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 0 0 1 1 0]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 0 1 1 1 0]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 1 1 1 1 1]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 0 0 1 1 1]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 0 0 0 0 1]&lt;/div&gt;&lt;div&gt;&amp;nbsp;[0 0 0 0 0 0 0 0]&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="320" width="180" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ZC4Wm01_LG6_lh8ry9yx-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="379.9999999999998" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="ZC4Wm01_LG6_lh8ry9yx-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="259.7931034482758" y="454.9655172413793" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-4" value="Assign type to each room" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="260" y="375" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ZC4Wm01_LG6_lh8ry9yx-8" target="ZC4Wm01_LG6_lh8ry9yx-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="519.9999999999998" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-8" value="Spawn enemies, structures, boss based off a type and difficulty" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="380" y="367.5" width="95" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-11" value="Each &quot;1&quot; is a list of enemies, structures, and what type it is" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="510" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-14" value="Load room if player in it" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="509.9999999999998" y="375" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ZC4Wm01_LG6_lh8ry9yx-16" value="#0 no room&lt;div&gt;#1 normal room&lt;/div&gt;&lt;div&gt;#2 spawn room&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="290" y="520" width="120" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
