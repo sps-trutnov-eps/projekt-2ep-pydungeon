@@ -6,7 +6,7 @@ middlecords = [round((size-1)/2),round((size-1)/2)] #middle of map
 def GenerateMap(size):
     global map
     #generates matrix SIZE X SIZE filled with 0
-    map = numpy.zeros((size, size), dtype=numpy.int8, order='C')
+    map = numpy.zeros((size, size), dtype=object, order='C')
     #dtype should be changed to bool after finishing
 
 
@@ -57,7 +57,7 @@ def CheckIfCordinateIsInBound(checkedCord):
         #NOTE: DONT USE MIDDLECORDS, use middlecords expresion to prevent change of middlecord
 
 
-
+numberOfRooms = numpy.count_nonzero(map)
 GenerateMap(size)
 GenerateLevel(30)
 
