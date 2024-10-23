@@ -82,36 +82,41 @@ def Main():
 
         def attack(self, hracRect, rammerMoving):
             # Calculate the center of the player and the rammer
-            centerOfPlayer = pygame.Vector2((hracRect[0] + velikostHrace / 2, hracRect[1] + velikostHrace / 2))
+            centerOfPlayer = pygame.Vector2(hracRect[0] + velikostHrace / 2, hracRect[1] + velikostHrace / 2)
             centerRammer = pygame.Vector2(self.rammerRect.center)  # Use the center of the pygame.Rect
 
-            # Calculate the direction and movement
-            lineLength = centerRammer.distance_to(centerOfPlayer)
-            try: direction = (centerOfPlayer - centerRammer).normalize()
-            except ValueError: direction = 1
-            scaledDirection = direction * lineLength
-            endingPos = centerRammer + round(scaledDirection * 1.2)
-            startPos = centerRammer - scaledDirection * 0.3
+            # Calculate the direction from the rammer to the player
+            direction = centerOfPlayer - centerRammer
+
+            # Ensure direction is normalized and non-zero
+            if direction.length() > 0:
+                direction = direction.normalize()
+
+            # Calculate the ending position (scaled direction for attack)
+            lineLength = centerRammer.distance_to(centerOfPlayer)  # Get the distance between the rammer and player
+            scaledDirection = direction * lineLength * 1.2  # Scale the direction to move beyond the player
+
+            # Calculate the ending and starting positions
+            endingPos = centerRammer + scaledDirection
+            startPos = centerRammer - (direction * lineLength * 0.3)  # Wind-up runway before attack
 
             # Draw the attack line
             pygame.draw.line(okno, (0, 0, 255), startPos, endingPos, 5)
 
-            # Handle acceleration
+            # Handle acceleration and deceleration based on movement
             if rammerMoving:
                 self.currentAcceleration += self.changeInAccelaration
                 if self.currentAcceleration > self.maxSpeed:
                     self.currentAcceleration = self.maxSpeed
-
             else:
                 self.currentAcceleration -= self.changeInAccelaration
                 if self.currentAcceleration < 0:
                     self.currentAcceleration = 0
 
+            # Update the rammer's position based on the current acceleration and direction
+            self.rammerRect.x += int(self.currentAcceleration * direction.x)
+            self.rammerRect.y += int(self.currentAcceleration * direction.y)
 
-            # Update the rammer's position
-            self.rammerRect[0] += int(self.currentAcceleration * direction[0])
-            self.rammerRect[1] += int(self.currentAcceleration * direction[1])
-        
 
     listRammer.append(Rammer(pygame.Rect(520,520, 60, 60), 60, 2))
 
