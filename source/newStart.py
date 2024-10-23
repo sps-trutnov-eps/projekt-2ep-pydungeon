@@ -26,6 +26,8 @@ def Main():
     global last_shot_time
     last_shot_time = 0
     rammerMoving = False
+    last_time_pressed = 0
+    pauseCooldown = 500
 
     listProjectilu = []
     class Projectile:
@@ -109,7 +111,7 @@ def Main():
                 if self.currentAcceleration > self.maxSpeed:
                     self.currentAcceleration = self.maxSpeed
             else:
-                self.currentAcceleration -= self.changeInAccelaration
+                self.currentAcceleration -= self.changeInAccelaration/2 #/2 so they glide longer
                 if self.currentAcceleration < 0:
                     self.currentAcceleration = 0
 
@@ -257,9 +259,10 @@ def Main():
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
 
-        if key_press[pygame.K_h]:
+        if key_press[pygame.K_h] and current_time - last_time_pressed >= pauseCooldown:
             rammerMoving = not rammerMoving
             print(f"Changed       rammerMoving: {rammerMoving}")
+            last_time_pressed = current_time
 
         update()
 
