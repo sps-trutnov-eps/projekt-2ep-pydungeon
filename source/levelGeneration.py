@@ -15,14 +15,14 @@ def PrintMap():
     print()
 
 
-def MakeRoom(MakeRoomCords):
-    map[MakeRoomCords[0],MakeRoomCords[1]] = 1
+def MakeRoom(MakeRoomCords, roomType):
+    map[MakeRoomCords[0],MakeRoomCords[1]] = roomType
     #Makes room (turns 0 into 1) at cords
 
 
 def GenerateLevel(LevelLength):
     global cordinates
-    MakeRoom(middlecords)
+    MakeRoom(middlecords, 1)
     #generates starting room in the middle
 
     for i in range(LevelLength): #Makes room for every LevelLenght
@@ -32,22 +32,22 @@ def GenerateLevel(LevelLength):
             case 1:
                 cordinates[0] -= 1 #moves the coords 1 room NORTH /\
                 CheckIfCordinateIsInBound(cordinates)
-                MakeRoom(cordinates)
+                MakeRoom(cordinates, 1)
 
             case 2:
                 cordinates[1] += 1 #moves the coords 1 room EAST >
                 CheckIfCordinateIsInBound(cordinates)
-                MakeRoom(cordinates)
+                MakeRoom(cordinates, 1)
 
             case 3:
                 cordinates[0] += 1 #moves the coords 1 room SOUTH \/
                 CheckIfCordinateIsInBound(cordinates)
-                MakeRoom(cordinates)
+                MakeRoom(cordinates, 1)
 
             case 4:
                 cordinates[1] -= 1 #moves the coords 1 room WEST <
                 CheckIfCordinateIsInBound(cordinates)
-                MakeRoom(cordinates)
+                MakeRoom(cordinates, 1)
 
 def CheckIfCordinateIsInBound(checkedCord):
     global cordinates
@@ -60,5 +60,7 @@ def CheckIfCordinateIsInBound(checkedCord):
 numberOfRooms = numpy.count_nonzero(map)
 GenerateMap(size)
 GenerateLevel(30)
+
+
 
 

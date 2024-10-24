@@ -7,6 +7,7 @@ def Main():
     holeSize = 250
     wallWidth = 100
     wallColour = (0, 255, 115)
+    plugColor = (25, 200, 115)
     backgroundColor = (179, 0, 179)
     rozliseniObrazovky = (1920, 1080)
 
@@ -16,6 +17,7 @@ def Main():
     grid = levelGeneration.map #recieves random map from levelGeneration.py    Type -> numpy.array
     middlecord = copy.copy(levelGeneration.middlecords) #middle of grid
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
+    print(grid)
 
     rychlostHrace = 5
     velikostHrace = 60
@@ -28,6 +30,8 @@ def Main():
     rammerMoving = False
     last_time_pressed = 0
     pauseCooldown = 500
+
+    playerPosBefore = (0,0)
 
     listProjectilu = []
     class Projectile:
@@ -61,7 +65,7 @@ def Main():
             
     listRammer = []
     class Rammer:
-        def __init__(self, rammerRect, hp, rychlost):
+        def __init__(self, rammerRect, hp):
             # Convert tuple to pygame.Rect if necessary
             if isinstance(rammerRect, tuple):
                 self.rammerRect = pygame.Rect(rammerRect)  # Converts tuple (x, y, width, height) to pygame.Rect
@@ -72,17 +76,26 @@ def Main():
 
             self.velikost = self.rammerRect.width  # The size is now the width of the rectangle
             self.hp = hp
-            self.rychlost = rychlost
 
             self.currentAcceleration = 0
-            self.changeInAccelaration = 0.5
-            self.maxSpeed = 10
+            self.INCchangeInAccelaration = 0.3
+            self.DECchangeInAccelaration = 0.5
+            self.maxSpeed = 7
+
 
         def draw(self, okno):
             # Draw the rammer using pygame.Rect
-            pygame.draw.rect(okno, (255, 255, 0), self.rammerRect)
+            pygame.draw.rect(okno, (255, 0, 0), self.rammerRect)
 
-        def attack(self, hracRect, rammerMoving):
+        def detekceKulek(self, listProjectilu):
+            for projectil in listProjectilu:
+                if pygame.Rect.colliderect(projectil.projectileRect, self.rammerRect):
+                    #když projectil a rammer střetne
+                    listProjectilu.remove(projectil)
+                    self.hp -= 10
+
+
+        def attack(self, hracRect):
             # Calculate the center of the player and the rammer
             centerOfPlayer = pygame.Vector2(hracRect[0] + velikostHrace / 2, hracRect[1] + velikostHrace / 2)
             centerRammer = pygame.Vector2(self.rammerRect.center)  # Use the center of the pygame.Rect
@@ -94,24 +107,13 @@ def Main():
             if direction.length() > 0:
                 direction = direction.normalize()
 
-            # Calculate the ending position (scaled direction for attack)
-            lineLength = centerRammer.distance_to(centerOfPlayer)  # Get the distance between the rammer and player
-            scaledDirection = direction * lineLength * 1.2  # Scale the direction to move beyond the player
-
-            # Calculate the ending and starting positions
-            endingPos = centerRammer + scaledDirection
-            startPos = centerRammer - (direction * lineLength * 0.3)  # Wind-up runway before attack
-
-            # Draw the attack line
-            pygame.draw.line(okno, (0, 0, 255), startPos, endingPos, 5)
-
             # Handle acceleration and deceleration based on movement
-            if rammerMoving:
-                self.currentAcceleration += self.changeInAccelaration
+            if HracSeHybe: 
+                self.currentAcceleration += self.INCchangeInAccelaration
                 if self.currentAcceleration > self.maxSpeed:
                     self.currentAcceleration = self.maxSpeed
             else:
-                self.currentAcceleration -= self.changeInAccelaration/2 #/2 so they glide longer
+                self.currentAcceleration -= self.DECchangeInAccelaration/2 #/2 so they glide longer
                 if self.currentAcceleration < 0:
                     self.currentAcceleration = 0
 
@@ -120,12 +122,14 @@ def Main():
             self.rammerRect.y += int(self.currentAcceleration * direction.y)
 
 
-    listRammer.append(Rammer(pygame.Rect(520,520, 60, 60), 60, 2))
-
     def rammerClassUpdate(listRammer):
-        for rammer in listRammer:
+        for rammer in listRammer[:]:
             rammer.draw(okno)
-            rammer.attack(hracRect, rammerMoving)
+            rammer.attack(hracRect)
+            rammer.detekceKulek(grid[current_room[0],current_room[1]][3])
+
+            if rammer.hp <= 0:
+                listRammer.remove(rammer)
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -133,12 +137,13 @@ def Main():
             rammerRect = (random.randint(wallWidth, rozliseniObrazovky[0] - wallWidth - 60),#X
                           random.randint(wallWidth, rozliseniObrazovky[1] - wallWidth - 60),
                           60, 60) #velikost
-            list.append(Rammer(rammerRect, 50, 5))
+            list.append(Rammer(rammerRect, 50))
 
-
+    grid[middlecord[0],middlecord[1]] = 2
+    #sets the middle of map (spawn room) room types
     #iterates over whole grid  --------- Allows to store list in elements       
     for element in numpy.nditer(grid, flags=['multi_index', 'refs_ok'],op_flags=['readwrite']): 
-        if element <= 1: #iterates over every room (isn't 0 in grid)
+        if element >= 1 : #iterates over every room (isn't 0 in grid)
             # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles]]
 
             #Temporar var
@@ -147,7 +152,9 @@ def Main():
             listOfRammers = [] #apeend class times number of enemies supposed to be in room (random * difficulty)
             listOfProjectiles = [] #empty till bullets are shot from player
 
-            spawnNumberOfRammers(random.randint(1, 1), listOfRammers, rozliseniObrazovky, wallWidth)
+
+            spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
+
 
             # [...] edits the original array instead of creating temporary array (from numpy)       
             element[...] = [
@@ -156,20 +163,32 @@ def Main():
                 listOfRammers, 
                 listOfProjectiles
             ] 
-    grid[middlecord[0],middlecord[1]][0] = 2
-    #sets the middle of map (spawn room) room types
-
+    #Empties the spawn room list of rammer, aka removes all rammer from spawn room
+    grid[middlecord[0], middlecord[1]][2] = []
 
 
     def pohybHrace(hrac_rect, key_press):
+        global HracSeHybe
+        playerPosBefore = copy.copy(hrac_rect)
+
         if key_press[pygame.K_s]:
             hrac_rect[1] += rychlostHrace
+
         if key_press[pygame.K_w]:
             hrac_rect[1] -= rychlostHrace
+
         if key_press[pygame.K_d]:
             hrac_rect[0] += rychlostHrace
+
         if key_press[pygame.K_a]:
             hrac_rect[0] -= rychlostHrace
+
+        #Rammer's player movement detection
+        if hrac_rect != playerPosBefore:
+            HracSeHybe = True
+        else: 
+            HracSeHybe = False
+            
 
     def KontrolaOutOfBounds(rozliseni): 
         velikostHrace = hracRect[2]
@@ -221,7 +240,15 @@ def Main():
 
         LefDowntWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1]/2 + holeSize/2, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
         DownLeftWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - wallWidth, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
+        '''
+        #sever
+        if grid[(current_room[0]  + 1), current_room[1]][0] == 0:
+            topPlug = pygame.draw.rect(okno, plugColor, (rozliseniObrazovky[0]/2 - holeSize/2, 0, holeSize, wallWidth))
 
+        #jih
+        if grid[(current_room[0] - 1), current_room[1]][0] == 0:
+            downPlug = pygame.draw.rect(okno, plugColor, (rozliseniObrazovky[0]/2 - wallWidth/2, rozliseniObrazovky[1] - wallWidth, holeSize, wallWidth))
+'''
     def draw(current_room): #draw the room (enemies, bullet, walls)
         #print(grid[current_room[0]][current_room[1]])
 
@@ -246,6 +273,8 @@ def Main():
 
         pygame.display.update() 
 
+
+    runOneTime = 0
     while True:
         clock.tick(60) #FPS
         for event in pygame.event.get():
@@ -256,13 +285,14 @@ def Main():
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
 
+        
+        if runOneTime == 0:
+            #stabilazes the rammer's player movement detection
+            pohybHrace(hracRect, key_press)
+            runOneTime = 1
+
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
-
-        if key_press[pygame.K_h] and current_time - last_time_pressed >= pauseCooldown:
-            rammerMoving = not rammerMoving
-            print(f"Changed       rammerMoving: {rammerMoving}")
-            last_time_pressed = current_time
 
         update()
 
