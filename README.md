@@ -1,4 +1,3 @@
 # Název projektu
 
-Popis projektu, návod k instalaci apod.
-test
+2d top down střílečka s variací nepřátel, upgradů a bossů. Vše v náhodně generovaném prostředí.
