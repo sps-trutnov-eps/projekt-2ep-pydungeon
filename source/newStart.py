@@ -2,6 +2,7 @@ import pygame, sys, copy, numpy, random, math
 import levelGeneration
 
 background = pygame.image.load("source/textures/background.png")
+playerTexture = pygame.image.load("source/textures/player.png")
 
 def Main():
     pygame.init()
@@ -271,6 +272,7 @@ def Main():
         pohybHrace(hracRect, key_press)
         KontrolaOutOfBounds(rozliseniObrazovky)
         pygame.draw.rect(okno, barvaHrace, hracRect)
+        okno.blit(playerTexture, hracRect)
         draw(current_room)
 
         pygame.display.update() 
@@ -295,7 +297,6 @@ def Main():
 
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
-
         update()
 
 ################################################################################################################################################################################################################################
