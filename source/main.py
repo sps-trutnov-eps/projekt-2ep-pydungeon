@@ -33,6 +33,9 @@ def Main():
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
+    background = pygame.image.load("source/textures/background.png")
+    playerTexture = pygame.image.load("source/textures/player.png")
+
     listProjectilu = []
     class Projectile:
         def __init__(self, projectileRect, angle, penetration=1):
@@ -286,7 +289,7 @@ def Main():
 
     def update():
         global poziceHracePredPohybem
-        okno.fill(backgroundColor)
+        okno.blit(background, [0, 0])
 
         #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
@@ -301,7 +304,8 @@ def Main():
         pohybHrace(hracRect, key_press)
         KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
-        pygame.draw.rect(okno, barvaHrace, hracRect)
+        okno.blit(playerTexture, hracRect)
+        # pygame.draw.rect(okno, barvaHrace, hracRect)
         pygame.display.update() 
 
 
