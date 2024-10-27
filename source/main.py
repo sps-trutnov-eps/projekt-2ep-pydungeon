@@ -6,9 +6,8 @@ def Main():
 
     holeSize = 250
     wallWidth = 100
-    wallColour = (0, 255, 115)
-    plugColor = (25, 200, 115)
-    backgroundColor = (179, 0, 179)
+    wallColour = (51, 46, 37)
+    plugColor = (45, 40, 29)
     rozliseniObrazovky = (1920, 1080)
 
     okno = pygame.display.set_mode((rozliseniObrazovky))
@@ -21,7 +20,6 @@ def Main():
 
     rychlostHrace = 5
     velikostHrace = 60
-    barvaHrace = (128, 159, 255)
     global hracRect
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
 
@@ -35,6 +33,7 @@ def Main():
 
     background = pygame.image.load("source/textures/background.png")
     playerTexture = pygame.image.load("source/textures/player.png")
+    rammerTexture = pygame.image.load('source/textures/rammerTexture.png')
 
     listProjectilu = []
     class Projectile:
@@ -87,8 +86,8 @@ def Main():
 
 
         def draw(self, okno):
-            # Draw the rammer using pygame.Rect
-            pygame.draw.rect(okno, (255, 0, 0), self.rammerRect)
+            # pygame.draw.rect(okno, (255, 0, 0), self.rammerRect)
+            okno.blit(rammerTexture, self.rammerRect)
 
         def detekceKulek(self, listProjectilu):
             for projectil in listProjectilu:
@@ -305,7 +304,6 @@ def Main():
         KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
         okno.blit(playerTexture, hracRect)
-        # pygame.draw.rect(okno, barvaHrace, hracRect)
         pygame.display.update() 
 
 
