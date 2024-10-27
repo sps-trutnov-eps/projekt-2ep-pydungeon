@@ -19,14 +19,19 @@ def Main():
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
     print(grid)
 
-    rychlostHrace = 15
+    rychlostHrace = 5
     velikostHrace = 60
     barvaHrace = (128, 159, 255)
+    global hracRect
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
 
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
     global last_shot_time
     last_shot_time = 0
+
+    global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
+    global poziceHracePredPohybem
+    poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
     listProjectilu = []
     class Projectile:
@@ -162,28 +167,7 @@ def Main():
     grid[middlecord[0], middlecord[1]][2] = []
 
 
-    def pohybHrace(hrac_rect, key_press):
-        global HracSeHybe
-        playerPosBefore = copy.copy(hrac_rect)
 
-        if key_press[pygame.K_s]:
-            hrac_rect[1] += rychlostHrace
-
-        if key_press[pygame.K_w]:
-            hrac_rect[1] -= rychlostHrace
-
-        if key_press[pygame.K_d]:
-            hrac_rect[0] += rychlostHrace
-
-        if key_press[pygame.K_a]:
-            hrac_rect[0] -= rychlostHrace
-
-        #Rammer's player movement detection
-        if hrac_rect != playerPosBefore:
-            HracSeHybe = True
-        else: 
-            HracSeHybe = False
-            
 
     def KontrolaOutOfBounds(rozliseni, Grid):
         velikostHrace = hracRect[2]
@@ -239,22 +223,71 @@ def Main():
         DownLeftWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - wallWidth, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
 
         #draw plug 'door' if the room that it leads to doesnt exist
-        if grid[current_room[0], current_room[1] - 1] == 0: #VLEVO
-            leftPlug = pygame.draw.rect(okno, plugColor, (0, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize))
-        if grid[current_room[0], current_room[1] + 1] == 0: #pravo
-            rightPlug = pygame.draw.rect(okno, plugColor, (rozliseniObrazovky[0] - wallWidth, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize))
-        if grid[current_room[0] - 1, current_room[1]] == 0: #horni
-            horniPlug = pygame.draw.rect(okno, plugColor, (rozliseniObrazovky[0]/2 - holeSize/2, 0, holeSize, wallWidth))
-        if grid[current_room[0] + 1, current_room[1]] == 0: #dole
-            dolniPlug = pygame.draw.rect(okno, plugColor, (rozliseniObrazovky[0]/2 - holeSize/2, rozliseniObrazovky[1] - wallWidth, holeSize, wallWidth))
-        
-    def draw(current_room): #draw the room (enemies, bullet, walls)
-        #print(grid[current_room[0]][current_room[1]])
+        #Error handling because it threw error when it tried to check a room that was outside of array
+        leftPlugRect = (0, 0, 0, 0)
+        try: 
+            if grid[current_room[0], current_room[1] - 1] == 0: #VLEVO
+                leftPlugRect = (0, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
+                leftPlug = pygame.draw.rect(okno, plugColor, leftPlugRect)
+        except IndexError:
+            leftPlug = pygame.draw.rect(okno, plugColor, leftPlugRect)
+            
+        rightPlugRect = (0, 0, 0, 0)
+        try: 
+            if grid[current_room[0], current_room[1] + 1] == 0: #pravo
+                rightPlugRect = (rozliseniObrazovky[0] - wallWidth, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
+                rightPlug = pygame.draw.rect(okno, plugColor, rightPlugRect)
+        except IndexError:
+            rightPlug = pygame.draw.rect(okno, plugColor, rightPlugRect)
+            
+        horniPlugRect = (0, 0, 0, 0)
+        try: 
+            if grid[current_room[0] - 1, current_room[1]] == 0: #horni
+                horniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, 0, holeSize, wallWidth)
+                horniPlug = pygame.draw.rect(okno, plugColor, horniPlugRect)
+        except IndexError:
+            horniPlug = pygame.draw.rect(okno, plugColor, horniPlugRect)
+            
+        dolniPlugRect = (0, 0, 0, 0)
+        try: 
+            if grid[current_room[0] + 1, current_room[1]] == 0: #dole
+                dolniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, rozliseniObrazovky[1] - wallWidth, holeSize, wallWidth)
+                dolniPlug = pygame.draw.rect(okno, plugColor, dolniPlugRect)
+        except IndexError:
+            dolniPlug = pygame.draw.rect(okno, plugColor, dolniPlugRect)
+            
+        global hracRect
+        if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlugRect, rightPlugRect, horniPlugRect, dolniPlugRect]) >= 0:
+            hracRect = copy.copy(playerPosBefore)
 
-        DrawRoom() #zdi
+    def pohybHrace(hrac_rect, key_press):
+        global HracSeHybe, playerPosBefore
+        playerPosBefore = copy.copy(hrac_rect)
+
+        if key_press[pygame.K_s]:
+            hrac_rect[1] += rychlostHrace
+
+        if key_press[pygame.K_w]:
+            hrac_rect[1] -= rychlostHrace
+
+        if key_press[pygame.K_d]:
+            hrac_rect[0] += rychlostHrace
+
+        if key_press[pygame.K_a]:
+            hrac_rect[0] -= rychlostHrace
+
+        #Rammer's player movement detection
+        if hrac_rect != playerPosBefore:
+            HracSeHybe = True
+        else: 
+            HracSeHybe = False
+
+
 
     def update():
+        global poziceHracePredPohybem
         okno.fill(backgroundColor)
+
         #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
             vystreleniProjectilu(listProjectilu, hracRect, current_time)
@@ -264,13 +297,11 @@ def Main():
         rammerClassUpdate(grid[current_room[0],current_room[1]][2])
 
         #POHYB    ----  
+        DrawRoom() #zdi
         pohybHrace(hracRect, key_press)
         KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
         pygame.draw.rect(okno, barvaHrace, hracRect)
-        draw(current_room)
-
-
         pygame.display.update() 
 
 
@@ -293,6 +324,7 @@ def Main():
 
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
+
 
         update()
 
