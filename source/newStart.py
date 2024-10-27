@@ -1,6 +1,8 @@
 import pygame, sys, copy, numpy, random, math
 import levelGeneration
 
+background = pygame.image.load("source/textures/background.png")
+
 def Main():
     pygame.init()
 
@@ -255,7 +257,7 @@ def Main():
         DrawRoom() #zdi
 
     def update():
-        okno.fill(backgroundColor)
+        okno.blit(background, [0,0])
 
         #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
