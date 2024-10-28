@@ -20,8 +20,10 @@ def Main():
 
     rychlostHrace = 5
     velikostHrace = 60
-    global hracRect
+    global hracRect, hracAnimace
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
+    hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
+    
 
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
     global last_shot_time
@@ -32,8 +34,12 @@ def Main():
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
     background = pygame.image.load("source/textures/background.png")
-    playerTexture = pygame.image.load("source/textures/player.png")
     rammerTexture = pygame.image.load('source/textures/rammerTexture.png')
+    playerTextureDown = pygame.image.load("source/textures/player_down.png")
+    playerTextureLeft = pygame.image.load("source/textures/player_left.png")
+    playerTextureRight = pygame.image.load("source/textures/player_right.png")
+    playerTextureUp = pygame.image.load("source/textures/player_up.png")
+    playerTextureIdle = pygame.image.load("source/textures/player_idle.png")
 
     listProjectilu = []
     class Projectile:
@@ -263,20 +269,27 @@ def Main():
             hracRect = copy.copy(playerPosBefore)
 
     def pohybHrace(hrac_rect, key_press):
-        global HracSeHybe, playerPosBefore
+        global HracSeHybe, playerPosBefore, hracAnimace
         playerPosBefore = copy.copy(hrac_rect)
 
         if key_press[pygame.K_s]:
             hrac_rect[1] += rychlostHrace
+            hracAnimace = 4
 
         if key_press[pygame.K_w]:
             hrac_rect[1] -= rychlostHrace
+            hracAnimace = 2
 
         if key_press[pygame.K_d]:
             hrac_rect[0] += rychlostHrace
+            hracAnimace = 3
 
         if key_press[pygame.K_a]:
             hrac_rect[0] -= rychlostHrace
+            hracAnimace = 1
+
+        if not any(key_press):
+            hracAnimace = 0
 
         #Rammer's player movement detection
         if hrac_rect != playerPosBefore:
@@ -284,7 +297,19 @@ def Main():
         else: 
             HracSeHybe = False
 
-
+    def DrawPlayer():
+        match hracAnimace:
+            case 1: #left
+                okno.blit(playerTextureLeft, hracRect)
+            case 2: #up
+                okno.blit(playerTextureUp, hracRect)
+            case 3: #left
+                okno.blit(playerTextureRight, hracRect)
+            case 4: #down
+                okno.blit(playerTextureDown, hracRect)
+            case 0: #idle
+                okno.blit(playerTextureIdle, hracRect)
+            
 
     def update():
         global poziceHracePredPohybem
@@ -303,7 +328,7 @@ def Main():
         pohybHrace(hracRect, key_press)
         KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
-        okno.blit(playerTexture, hracRect)
+        DrawPlayer()
         pygame.display.update() 
 
 
