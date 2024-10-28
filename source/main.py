@@ -7,7 +7,8 @@ def Main():
     holeSize = 250
     wallWidth = 100
     wallColour = (51, 46, 37)
-    plugColor = (45, 40, 29)
+    #plugColor = (45, 40, 29)
+    plugColor = (51, 46, 37)
     rozliseniObrazovky = (1920, 1080)
 
     okno = pygame.display.set_mode((rozliseniObrazovky))
@@ -18,7 +19,7 @@ def Main():
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
     print(grid)
 
-    rychlostHrace = 5
+    rychlostHrace = 20
     velikostHrace = 60
     global hracRect, hracAnimace
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
@@ -40,6 +41,12 @@ def Main():
     playerTextureRight = pygame.image.load("source/textures/player_right.png")
     playerTextureUp = pygame.image.load("source/textures/player_up.png")
     playerTextureIdle = pygame.image.load("source/textures/player_idle.png")
+
+    sentryCannon = pygame.image.load("source/textures/sentry_canon.png").convert_alpha()
+    sentryCannon = pygame.transform.scale(sentryCannon, (108, 40))
+
+    sentryBase = pygame.image.load("source/textures/sentry_base.png")
+    sentryBase = pygame.transform.scale(sentryBase, (112, 112))
 
     listProjectilu = []
     class Projectile:
@@ -147,60 +154,100 @@ def Main():
                           60, 60) #velikost
             list.append(Rammer(rammerRect, 50))
 
+    class Sentry:
+        def __init__(self, cordX, cordY):
+            self.cordX = cordX
+            self.cordY = cordY
+            self.velikost = 90
+            self.sentryRect = pygame.Rect(self.cordX, self.cordY, self.velikost, self.velikost)
+            self.textureCannon = sentryCannon
+            self.textureBase = sentryBase
+            self.angleOfCannon = 0
+            self.cannon_rect = pygame.Rect(0, 0, 0, 0)
+
+        def draw(self):
+            okno.blit(self.textureBase, self.sentryRect)
+            okno.blit(self.textureCannon, self.cannon_rect)
+
+        def rotateCannon(self):
+            mousePos = pygame.mouse.get_pos()
+
+            x_dist = mousePos[0] - self.cordX
+            y_dist = -(mousePos[1] - self.cordY)
+            angle = math.degrees(math.atan2(y_dist, x_dist))
+
+            self.textureCannon = pygame.transform.rotate(sentryCannon, angle - 180)
+            self.cannon_rect = self.textureCannon.get_rect(center = (self.cordX + 54, self.cordY + 54))
+
+    def sentryClassUpdate(listSentry):
+        for sentry in listSentry:
+            sentry.draw()
+            sentry.rotateCannon()
+
+    def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
+        for number in range(numberOfSentry):
+            list.append(Sentry((random.randint(wallWidth + 60, rozliseniObrazovky[0] - wallWidth - 120)), #cordX
+                               (random.randint(wallWidth + 60, rozliseniObrazovky[1] - wallWidth - 120)) #cordY
+                                ))
+
     grid[middlecord[0],middlecord[1]] = 2
     #sets the middle of map (spawn room) room types
     #iterates over whole grid  --------- Allows to store list in elements       
     for element in numpy.nditer(grid, flags=['multi_index', 'refs_ok'],op_flags=['readwrite']): 
         if element >= 1 : #iterates over every room (isn't 0 in grid)
-            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles]]
+            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles], 4[listOfSentries]]
 
             #Temporar var
             roomType = int(element) #if room is normal (#1), spawn (2#), etc
             roomLayout = random.randint(1,1) #currently only one layout (shape of walls)
             listOfRammers = [] #apeend class times number of enemies supposed to be in room (random * difficulty)
             listOfProjectiles = [] #empty till bullets are shot from player
+            listOfSentry = [] #list of sentryes in room
 
 
             spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
-
+            SpawnNumberOfSentry(random.randint(0, 2), listOfSentry, rozliseniObrazovky, wallWidth)
 
             # [...] edits the original array instead of creating temporary array (from numpy)       
             element[...] = [
                 roomType,
                 roomLayout, 
                 listOfRammers, 
-                listOfProjectiles
+                listOfProjectiles,
+                listOfSentry
             ] 
+
     #Empties the spawn room list of rammer, aka removes all rammer from spawn room
     grid[middlecord[0], middlecord[1]][2] = []
-
-
+    grid[middlecord[0], middlecord[1]][4] = []
 
 
     def KontrolaOutOfBounds(rozliseni, Grid):
         velikostHrace = hracRect[2]
+        try: 
+            if hracRect[0] < 0 - velikostHrace and Grid[current_room[0], current_room[1] - 1] != 0: #VLEVO, kontrola jestli roomka do ktery chce vejít existuje
+                current_room[1] -= 1
+                hracRect[0] = (rozliseni[0] - velikostHrace) #sets player at oposite side of screen
+                hracRect[1] = rozliseni[1]/2 - velikostHrace/2 #middle of opposite 
         
-        if hracRect[0] < 0 - velikostHrace and Grid[current_room[0], current_room[1] - 1] != 0: #VLEVO, kontrola jestli roomka do ktery chce vejít existuje
-            current_room[1] -= 1
-            hracRect[0] = (rozliseni[0] - velikostHrace) #sets player at oposite side of screen
-            hracRect[1] = rozliseni[1]/2 - velikostHrace/2 #middle of opposite 
+            elif hracRect[0] >= rozliseni[0] and Grid[current_room[0], current_room[1] + 1] != 0: #pravo
+                current_room[1] += 1
+                hracRect[0] = 0 - velikostHrace
+                hracRect[1] = rozliseni[1]/2 - velikostHrace/2
+        
+            elif hracRect[1] < 0 - velikostHrace and Grid[current_room[0] - 1, current_room[1]] != 0: #horni
+                current_room[0] -= 1
+                hracRect[1] = rozliseni[1]
+                hracRect[0] = rozliseni[0]/2 - velikostHrace/2
+                
+            elif hracRect[1] >= rozliseni[1] and Grid[current_room[0] + 1, current_room[1]] != 0: #dole
+                current_room[0] += 1
+                hracRect[1] = 0 - velikostHrace
+                hracRect[0] = rozliseni[0]/2 - velikostHrace/2
+        except IndexError:
+            print("ERROR")
 
-        elif hracRect[0] >= rozliseni[0] and Grid[current_room[0], current_room[1] + 1] != 0: #pravo
-            current_room[1] += 1
-            hracRect[0] = 0 - velikostHrace
-            hracRect[1] = rozliseni[1]/2 - velikostHrace/2
-
-        elif hracRect[1] < 0 - velikostHrace and Grid[current_room[0] - 1, current_room[1]] != 0: #horni
-            current_room[0] -= 1
-            hracRect[1] = rozliseni[1]
-            hracRect[0] = rozliseni[0]/2 - velikostHrace/2
-
-        elif hracRect[1] >= rozliseni[1] and Grid[current_room[0] + 1, current_room[1]] != 0: #dole
-            current_room[0] += 1
-            hracRect[1] = 0 - velikostHrace
-            hracRect[0] = rozliseni[0]/2 - velikostHrace/2
-
-
+        
 
     #NOTE need to make local function
     def vystreleniProjectilu(listProjectilu, hracRect, current_time):
@@ -238,6 +285,7 @@ def Main():
                 leftPlugRect = (0, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
                 leftPlug = pygame.draw.rect(okno, plugColor, leftPlugRect)
         except IndexError:
+            leftPlugRect = (0, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
             leftPlug = pygame.draw.rect(okno, plugColor, leftPlugRect)
             
         rightPlugRect = (0, 0, 0, 0)
@@ -246,6 +294,7 @@ def Main():
                 rightPlugRect = (rozliseniObrazovky[0] - wallWidth, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
                 rightPlug = pygame.draw.rect(okno, plugColor, rightPlugRect)
         except IndexError:
+            rightPlugRect = (rozliseniObrazovky[0] - wallWidth, rozliseniObrazovky[1]/2 - holeSize/2, wallWidth, holeSize)
             rightPlug = pygame.draw.rect(okno, plugColor, rightPlugRect)
             
         horniPlugRect = (0, 0, 0, 0)
@@ -254,6 +303,7 @@ def Main():
                 horniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, 0, holeSize, wallWidth)
                 horniPlug = pygame.draw.rect(okno, plugColor, horniPlugRect)
         except IndexError:
+            horniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, 0, holeSize, wallWidth)
             horniPlug = pygame.draw.rect(okno, plugColor, horniPlugRect)
             
         dolniPlugRect = (0, 0, 0, 0)
@@ -262,6 +312,7 @@ def Main():
                 dolniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, rozliseniObrazovky[1] - wallWidth, holeSize, wallWidth)
                 dolniPlug = pygame.draw.rect(okno, plugColor, dolniPlugRect)
         except IndexError:
+            dolniPlugRect = (rozliseniObrazovky[0]/2 - holeSize/2, rozliseniObrazovky[1] - wallWidth, holeSize, wallWidth)
             dolniPlug = pygame.draw.rect(okno, plugColor, dolniPlugRect)
             
         global hracRect
@@ -323,6 +374,9 @@ def Main():
         #RAMMERS  ----
         rammerClassUpdate(grid[current_room[0],current_room[1]][2])
 
+        #Sentry
+        sentryClassUpdate(grid[current_room[0],current_room[1]][4])
+
         #POHYB    ----  
         DrawRoom() #zdi
         pohybHrace(hracRect, key_press)
@@ -342,6 +396,7 @@ def Main():
 
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
+
 
         
         if runOneTime == 0:
