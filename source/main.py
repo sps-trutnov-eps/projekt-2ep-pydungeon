@@ -30,6 +30,8 @@ def Main():
     global last_shot_time
     last_shot_time = 0
 
+
+
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
@@ -154,6 +156,32 @@ def Main():
                           60, 60) #velikost
             list.append(Rammer(rammerRect, 50))
 
+    class SentryBullet:
+        def __init__(self, cordX, cordY):
+            self.cordX = cordX
+            self.cordY = cordY
+            self.rychlost = 5
+            self.sentryBulletRect = pygame.Rect(self.cordX, self.cordY, 15, 15)
+            
+            dx = hracRect[0] - self.sentryBulletRect[0]
+            dy = hracRect[1] - self.sentryBulletRect[1]
+            distance = math.sqrt(dx**2 + dy**2)
+
+            self.vel_x = (dx / distance) * self.rychlost
+            self.vel_y = (dy / distance) * self.rychlost
+
+        def draw(self):
+            pygame.draw.circle(okno, (255, 0, 0), (self.sentryBulletRect[0], self.sentryBulletRect[1]), self.sentryBulletRect[2])
+
+        def movement(self):
+            self.sentryBulletRect[0] += self.vel_x
+            self.sentryBulletRect[1] += self.vel_y
+
+    def SentryBulletClassUpdate(list):
+        for bullet in list:
+            bullet.draw()
+            bullet.movement()
+
     class Sentry:
         def __init__(self, cordX, cordY):
             self.cordX = cordX
@@ -164,24 +192,33 @@ def Main():
             self.textureBase = sentryBase
             self.angleOfCannon = 0
             self.cannon_rect = pygame.Rect(0, 0, 0, 0)
+            self.lastShotTime = random.randint(0, 1)/10
+            self.cooldown = 600
 
         def draw(self):
             okno.blit(self.textureBase, self.sentryRect)
             okno.blit(self.textureCannon, self.cannon_rect)
 
         def rotateCannon(self):
+            x_dist = hracRect.centerx - self.cordX
+            y_dist = -(hracRect.centery - self.cordY)
+            self.angleOfCannon = math.degrees(math.atan2(y_dist, x_dist))
 
-            x_dist = hracRect[0] - self.cordX
-            y_dist = -(hracRect[1] - self.cordY)
-            angle = math.degrees(math.atan2(y_dist, x_dist))
-
-            self.textureCannon = pygame.transform.rotate(sentryCannon, angle - 180)
+            self.textureCannon = pygame.transform.rotate(sentryCannon, self.angleOfCannon - 180)
             self.cannon_rect = self.textureCannon.get_rect(center = (self.cordX + 54, self.cordY + 54))
+
+        def attack(self, list):
+            if current_time - self.lastShotTime >= self.cooldown:
+                
+                list.append(SentryBullet(self.sentryRect.centerx, self.sentryRect.centery))
+                self.lastShotTime = current_time
+        
 
     def sentryClassUpdate(listSentry):
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
+            sentry.attack(grid[current_room[0],current_room[1]][5])
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -189,12 +226,12 @@ def Main():
                                (random.randint(wallWidth + 60, rozliseniObrazovky[1] - wallWidth - 120)) #cordY
                                 ))
 
-    grid[middlecord[0],middlecord[1]] = 2
     #sets the middle of map (spawn room) room types
+    grid[middlecord[0],middlecord[1]] = 2
     #iterates over whole grid  --------- Allows to store list in elements       
     for element in numpy.nditer(grid, flags=['multi_index', 'refs_ok'],op_flags=['readwrite']): 
         if element >= 1 : #iterates over every room (isn't 0 in grid)
-            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles], 4[listOfSentries]]
+            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles], 4[listOfSentries], 5[listOfSentryProjectile]]
 
             #Temporar var
             roomType = int(element) #if room is normal (#1), spawn (2#), etc
@@ -202,6 +239,7 @@ def Main():
             listOfRammers = [] #apeend class times number of enemies supposed to be in room (random * difficulty)
             listOfProjectiles = [] #empty till bullets are shot from player
             listOfSentry = [] #list of sentryes in room
+            listOfSentryProjectile = [] #sentries projectile
 
 
             spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
@@ -213,7 +251,8 @@ def Main():
                 roomLayout, 
                 listOfRammers, 
                 listOfProjectiles,
-                listOfSentry
+                listOfSentry,
+                listOfSentryProjectile
             ] 
 
     #Empties the spawn room list of rammer, aka removes all rammer from spawn room
@@ -374,7 +413,9 @@ def Main():
         rammerClassUpdate(grid[current_room[0],current_room[1]][2])
 
         #Sentry
+        SentryBulletClassUpdate(grid[current_room[0],current_room[1]][5])
         sentryClassUpdate(grid[current_room[0],current_room[1]][4])
+        
 
         #POHYB    ----  
         DrawRoom() #zdi
