@@ -170,10 +170,9 @@ def Main():
             okno.blit(self.textureCannon, self.cannon_rect)
 
         def rotateCannon(self):
-            mousePos = pygame.mouse.get_pos()
 
-            x_dist = mousePos[0] - self.cordX
-            y_dist = -(mousePos[1] - self.cordY)
+            x_dist = hracRect[0] - self.cordX
+            y_dist = -(hracRect[1] - self.cordY)
             angle = math.degrees(math.atan2(y_dist, x_dist))
 
             self.textureCannon = pygame.transform.rotate(sentryCannon, angle - 180)
