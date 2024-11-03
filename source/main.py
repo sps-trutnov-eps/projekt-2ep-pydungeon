@@ -35,18 +35,18 @@ def Main():
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
-    background = pygame.image.load("source/textures/background.png")
-    rammerTexture = pygame.image.load('source/textures/rammerTexture.png')
-    playerTextureDown = pygame.image.load("source/textures/player_down.png")
-    playerTextureLeft = pygame.image.load("source/textures/player_left.png")
-    playerTextureRight = pygame.image.load("source/textures/player_right.png")
-    playerTextureUp = pygame.image.load("source/textures/player_up.png")
-    playerTextureIdle = pygame.image.load("source/textures/player_idle.png")
+    background = pygame.image.load("textures/background.png")
+    rammerTexture = pygame.image.load('textures/rammerTexture.png')
+    playerTextureDown = pygame.image.load("textures/player_down.png")
+    playerTextureLeft = pygame.image.load("textures/player_left.png")
+    playerTextureRight = pygame.image.load("textures/player_right.png")
+    playerTextureUp = pygame.image.load("textures/player_up.png")
+    playerTextureIdle = pygame.image.load("textures/player_idle.png")
 
-    sentryCannon = pygame.image.load("source/textures/sentry_canon.png").convert_alpha()
+    sentryCannon = pygame.image.load("textures/sentry_canon.png").convert_alpha()
     sentryCannon = pygame.transform.scale(sentryCannon, (108, 40))
 
-    sentryBase = pygame.image.load("source/textures/sentry_base.png")
+    sentryBase = pygame.image.load("textures/sentry_base.png")
     sentryBase = pygame.transform.scale(sentryBase, (112, 112))
 
     listProjectilu = []
