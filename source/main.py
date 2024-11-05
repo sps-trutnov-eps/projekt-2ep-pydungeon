@@ -19,12 +19,13 @@ def Main():
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
     print(grid)
 
-    rychlostHrace = 5
+    rychlostHrace = 20
     velikostHrace = 60
     global hracRect, hracAnimace
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
     
+
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
     global last_shot_time
     last_shot_time = 0
@@ -79,6 +80,7 @@ def Main():
             if pygame.Rect.collidelist(projectily.projectileRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
                 listProjectiluIndex.remove(projectily)
             
+    listRammer = []
     class Rammer:
         def __init__(self, rammerRect, hp):
             # Convert tuple to pygame.Rect if necessary
@@ -160,10 +162,9 @@ def Main():
             self.cordY = cordY
             self.rychlost = 5
             self.sentryBulletRect = pygame.Rect(self.cordX, self.cordY, 15, 15)
-            self.penetration = 1 #how many times bullet can hit
             
-            dx = hracRect.centerx - self.sentryBulletRect.centerx
-            dy = hracRect.centery - self.sentryBulletRect.centery
+            dx = hracRect[0] - self.sentryBulletRect[0]
+            dy = hracRect[1] - self.sentryBulletRect[1]
             distance = math.sqrt(dx**2 + dy**2)
 
             self.vel_x = (dx / distance) * self.rychlost
@@ -173,24 +174,13 @@ def Main():
             pygame.draw.circle(okno, (255, 0, 0), (self.sentryBulletRect[0], self.sentryBulletRect[1]), self.sentryBulletRect[2])
 
         def movement(self):
-            self.sentryBulletRect.centerx += self.vel_x
-            self.sentryBulletRect.centery += self.vel_y
-
-        def despawn(self, resolution): # vrati true kdyz je venku z mapy nebo kulka nema "hp"
-            return self.sentryBulletRect[0] < 0 or self.sentryBulletRect[0] > resolution[0] or self.sentryBulletRect[1] < 0 or self.sentryBulletRect[1] > resolution[1] or self.penetration < 1
-           
+            self.sentryBulletRect[0] += self.vel_x
+            self.sentryBulletRect[1] += self.vel_y
 
     def SentryBulletClassUpdate(list):
         for bullet in list:
             bullet.draw()
             bullet.movement()
-
-            if bullet.despawn(rozliseniObrazovky):
-                list.remove(bullet)
-
-            if pygame.Rect.collidelist(bullet.projectileRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-                list.remove(bullet)
-            
 
     class Sentry:
         def __init__(self, cordX, cordY):
@@ -265,7 +255,7 @@ def Main():
                 listOfSentryProjectile
             ] 
 
-    #Empties the spawn room list of enemies, aka removes all enemies from spawn room
+    #Empties the spawn room list of rammer, aka removes all rammer from spawn room
     grid[middlecord[0], middlecord[1]][2] = []
     grid[middlecord[0], middlecord[1]][4] = []
 
@@ -416,7 +406,7 @@ def Main():
 
         #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
-            vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
+            vystreleniProjectilu(listProjectilu, hracRect, current_time)
         updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
 
         #RAMMERS  ----
@@ -446,6 +436,8 @@ def Main():
 
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
+
+
         
         if runOneTime == 0:
             #stabilazes the rammer's player movement detection
