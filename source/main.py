@@ -1,6 +1,22 @@
 import pygame, sys, copy, numpy, random, math
 import levelGeneration
 
+def Menu():
+    okno = pygame.display.set_mode((1920, 1080))
+    pygame.display.set_caption('Game Menu')
+    background = pygame.image.load("textures/menu_background.png")
+
+    while True:
+        for event in pygame.event.get():
+         if event.type == pygame.QUIT:
+            sys.exit()
+        
+
+        okno.blit(background, [0,0])
+        pygame.display.flip()
+
+
+
 def Main():
     pygame.init()
 
@@ -459,5 +475,6 @@ def Main():
         update()
 
 ################################################################################################################################################################################################################################
+
 if __name__ == '__main__':
-    Main()
+    Menu()
