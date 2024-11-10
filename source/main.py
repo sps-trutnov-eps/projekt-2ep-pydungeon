@@ -10,7 +10,11 @@ def Menu():
         for event in pygame.event.get():
          if event.type == pygame.QUIT:
             sys.exit()
-        
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+
+        if (764 <= mouse_x <= 1156) and (328 <= mouse_y <= 442) and event.type == pygame.MOUSEBUTTONDOWN:        # souřadnice tlačítka(764, 328) (1156, 442)
+            Main()
 
         okno.blit(background, [0,0])
         pygame.display.flip()
