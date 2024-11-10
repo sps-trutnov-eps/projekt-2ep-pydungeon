@@ -1,6 +1,26 @@
 import pygame, sys, copy, numpy, random, math
 import levelGeneration
 
+def Menu():
+    okno = pygame.display.set_mode((1920, 1080))
+    pygame.display.set_caption('Game Menu')
+    background = pygame.image.load("textures/menu_background.png")
+
+    while True:
+        for event in pygame.event.get():
+         if event.type == pygame.QUIT:
+            sys.exit()
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+
+        if (764 <= mouse_x <= 1156) and (328 <= mouse_y <= 442) and event.type == pygame.MOUSEBUTTONDOWN:        # souřadnice tlačítka(764, 328) (1156, 442)
+            Main()
+
+        okno.blit(background, [0,0])
+        pygame.display.flip()
+
+
+
 def Main():
     pygame.init()
 
@@ -459,5 +479,6 @@ def Main():
         update()
 
 ################################################################################################################################################################################################################################
+
 if __name__ == '__main__':
-    Main()
+    Menu()
