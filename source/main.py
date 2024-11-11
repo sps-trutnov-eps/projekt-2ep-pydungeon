@@ -57,6 +57,7 @@ def Main():
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
+    bossBackground = pygame.image.load("source/textures/boss_background.png")
     activatedPortalBackground = pygame.image.load("source/textures/activated_background.png")
     initialBackground = pygame.image.load("source/textures/initial_background.png")
     background = pygame.image.load("source/textures/background.png")
@@ -73,7 +74,12 @@ def Main():
     sentryBase = pygame.image.load("source/textures/sentry_base.png")
     sentryBase = pygame.transform.scale(sentryBase, (112, 112))
 
-    listProjectilu = []
+    runOneTime = 0
+    global runGame, runBossFight
+    runGame = 1
+    runBossFight = 0
+
+
     class Projectile:
         def __init__(self, projectileRect, angle, penetration=1):
             self.projectileRect = projectileRect
@@ -99,10 +105,14 @@ def Main():
             if projectily.despawn(rozliseniObrazovky):
                 listProjectiluIndex.remove(projectily)
             
-            #pygame.Rect.collidelist() returns zero if no collision, otherwise returns index of collided rect
-            if pygame.Rect.collidelist(projectily.projectileRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-                listProjectiluIndex.remove(projectily)
-            
+            if runBossFight == 1:
+                #pygame.Rect.collidelist() returns zero if no collision, otherwise returns index of collided rect
+                if pygame.Rect.collidelist(projectily.projectileRect, [bossTopWall, bossLeftWall, bossDownWall, bossRightWall]) >= 0:
+                    listProjectiluIndex.remove(projectily)
+            else:
+                if pygame.Rect.collidelist(projectily.projectileRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
+                    listProjectiluIndex.remove(projectily)
+                    
     class Rammer:
         def __init__(self, rammerRect, hp):
             # Convert tuple to pygame.Rect if necessary
@@ -440,13 +450,23 @@ def Main():
                 okno.blit(playerTextureDown, hracRect)
             case 0: #idle
                 okno.blit(playerTextureIdle, hracRect)
-            
+
+
+    def KontrolaTeleportuAHrace(rectHrace):
+        global runBossFight, runGame
+        teleportRect = pygame.Rect(860, 445, 210, 210)
+        if pygame.Rect.colliderect(teleportRect, rectHrace):
+            print(f"{runBossFight}    {runGame}")
+            runGame = 0
+            runBossFight = 1
 
     def update():
         global poziceHracePredPohybem
         if [current_room[0], current_room[1]] == [middlecord[0], middlecord[1]]:
             if pocetNepratel == 0:
                 okno.blit(activatedPortalBackground, [0, 0])
+                KontrolaTeleportuAHrace(hracRect)
+
             else:
                 okno.blit(initialBackground, [0, 0])
         else:
@@ -474,8 +494,31 @@ def Main():
         DrawPlayer()
         pygame.display.update() 
 
+    def DrawBossRoom():
+        global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
+        bossWallWidth = 50
+        bossTopWall = pygame.draw.rect(okno, wallColour, (0, 0, rozliseniObrazovky[0], bossWallWidth))
+        bossLeftWall = pygame.draw.rect(okno, wallColour, (0, 0, bossWallWidth, rozliseniObrazovky[0]))
+        bossDownWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - bossWallWidth, rozliseniObrazovky[0], bossWallWidth))
+        bossRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - bossWallWidth, 0, bossWallWidth, rozliseniObrazovky[1]))
 
-    runOneTime = 0
+        
+    def updateBoss():
+        okno.blit(bossBackground, [0,0])
+
+        #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
+        if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
+            vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
+        updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
+
+        #POHYB    ----  
+        DrawBossRoom() #zdi
+        pohybHrace(hracRect, key_press)
+        KontrolaOutOfBounds(rozliseniObrazovky, grid)
+
+        DrawPlayer()
+        pygame.display.update() 
+
     while True:
         clock.tick(60) #FPS
         for event in pygame.event.get():
@@ -494,8 +537,10 @@ def Main():
         if key_press[pygame.K_ESCAPE]:
             sys.exit()
 
-
-        update()
+        if runBossFight == 0:
+            update()
+        else:
+            updateBoss()
 
 ################################################################################################################################################################################################################################
 
