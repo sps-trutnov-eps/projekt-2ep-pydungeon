@@ -5,6 +5,7 @@ def Menu():
     okno = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption('Game Menu')
     background = pygame.image.load("source/textures/menu_background.png")
+    
 
     while True:
         for event in pygame.event.get():
@@ -43,7 +44,7 @@ def Main():
     rychlostHrace = 5
     velikostHrace = 60
     global hracRect, hracAnimace
-    hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2, rozliseniObrazovky[1]/2 - velikostHrace/2, velikostHrace, velikostHrace)
+    hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
     
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
@@ -56,6 +57,8 @@ def Main():
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
+    activatedPortalBackground = pygame.image.load("source/textures/activated_background.png")
+    initialBackground = pygame.image.load("source/textures/initial_background.png")
     background = pygame.image.load("source/textures/background.png")
     rammerTexture = pygame.image.load('source/textures/rammerTexture.png')
     playerTextureDown = pygame.image.load("source/textures/player_down.png")
@@ -283,8 +286,8 @@ def Main():
             listOfSentryProjectile = [] #sentries projectile
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(1, 3)
-                pocetSpawnutychSentry = random.randint(0, 2)
+                pocetSpawnutychRammeru = random.randint(0, 0)
+                pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(random.randint(0, 2), listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -297,7 +300,7 @@ def Main():
                 listOfProjectiles,
                 listOfSentry,
                 listOfSentryProjectile
-            ] 
+            ]
 
     def KontrolaOutOfBounds(rozliseni, Grid):
         velikostHrace = hracRect[2]
@@ -441,7 +444,14 @@ def Main():
 
     def update():
         global poziceHracePredPohybem
-        okno.blit(background, [0, 0])
+        if [current_room[0], current_room[1]] == [middlecord[0], middlecord[1]]:
+            if pocetNepratel == 0:
+                okno.blit(activatedPortalBackground, [0, 0])
+            else:
+                okno.blit(initialBackground, [0, 0])
+        else:
+            okno.blit(background, [0, 0])
+
 
         #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
         if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
