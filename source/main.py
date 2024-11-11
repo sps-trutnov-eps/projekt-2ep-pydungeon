@@ -4,7 +4,7 @@ import levelGeneration
 def Menu():
     okno = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption('Game Menu')
-    background = pygame.image.load("textures/menu_background.png")
+    background = pygame.image.load("source/textures/menu_background.png")
 
     while True:
         for event in pygame.event.get():
@@ -13,7 +13,7 @@ def Menu():
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
 
-        if (764 <= mouse_x <= 1156) and (328 <= mouse_y <= 442) and event.type == pygame.MOUSEBUTTONDOWN:        # souřadnice tlačítka(764, 328) (1156, 442)
+        if (764 <= mouse_x <= 1156) and (328 <= mouse_y <= 442) and event.type == pygame.MOUSEBUTTONDOWN: # souřadnice tlačítka(764, 328) (1156, 442)
             Main()
 
         okno.blit(background, [0,0])
@@ -34,6 +34,7 @@ def Main():
     okno = pygame.display.set_mode((rozliseniObrazovky))
     clock = pygame.time.Clock()
 
+    numberOfRooms = levelGeneration.numberOfRooms
     grid = levelGeneration.map #recieves random map from levelGeneration.py    Type -> numpy.array
     middlecord = copy.copy(levelGeneration.middlecords) #middle of grid
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
@@ -49,24 +50,24 @@ def Main():
     global last_shot_time
     last_shot_time = 0
 
-
+    pocetNepratel = 0
 
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
-    background = pygame.image.load("textures/background.png")
-    rammerTexture = pygame.image.load('textures/rammerTexture.png')
-    playerTextureDown = pygame.image.load("textures/player_down.png")
-    playerTextureLeft = pygame.image.load("textures/player_left.png")
-    playerTextureRight = pygame.image.load("textures/player_right.png")
-    playerTextureUp = pygame.image.load("textures/player_up.png")
-    playerTextureIdle = pygame.image.load("textures/player_idle.png")
+    background = pygame.image.load("source/textures/background.png")
+    rammerTexture = pygame.image.load('source/textures/rammerTexture.png')
+    playerTextureDown = pygame.image.load("source/textures/player_down.png")
+    playerTextureLeft = pygame.image.load("source/textures/player_left.png")
+    playerTextureRight = pygame.image.load("source/textures/player_right.png")
+    playerTextureUp = pygame.image.load("source/textures/player_up.png")
+    playerTextureIdle = pygame.image.load("source/textures/player_idle.png")
 
-    sentryCannon = pygame.image.load("textures/sentry_canon.png").convert_alpha()
+    sentryCannon = pygame.image.load("source/textures/sentry_canon.png").convert_alpha()
     sentryCannon = pygame.transform.scale(sentryCannon, (108, 40))
 
-    sentryBase = pygame.image.load("textures/sentry_base.png")
+    sentryBase = pygame.image.load("source/textures/sentry_base.png")
     sentryBase = pygame.transform.scale(sentryBase, (112, 112))
 
     listProjectilu = []
@@ -208,7 +209,7 @@ def Main():
             if bullet.despawn(rozliseniObrazovky):
                 list.remove(bullet)
 
-            if pygame.Rect.collidelist(bullet.projectileRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
+            if pygame.Rect.collidelist(bullet.sentryBulletRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
                 list.remove(bullet)
             
 
@@ -224,6 +225,7 @@ def Main():
             self.cannon_rect = pygame.Rect(0, 0, 0, 0)
             self.lastShotTime = random.randint(0, 1)/10
             self.cooldown = 600
+            self.hp = 70
 
         def draw(self):
             okno.blit(self.textureBase, self.sentryRect)
@@ -243,12 +245,21 @@ def Main():
                 list.append(SentryBullet(self.sentryRect.centerx, self.sentryRect.centery))
                 self.lastShotTime = current_time
         
+        def detekceKulek(self, listProjectilu):
+            for projectil in listProjectilu:
+                if pygame.Rect.colliderect(projectil.projectileRect, self.sentryRect):
+                    listProjectilu.remove(projectil)
+                    self.hp -= 10
 
     def sentryClassUpdate(listSentry):
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
             sentry.attack(grid[current_room[0],current_room[1]][5])
+            sentry.detekceKulek(grid[current_room[0], current_room[1]][3])
+
+            if sentry.hp <= 0:
+                listSentry.remove(sentry)
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -271,9 +282,12 @@ def Main():
             listOfSentry = [] #list of sentryes in room
             listOfSentryProjectile = [] #sentries projectile
 
-
-            spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
-            SpawnNumberOfSentry(random.randint(0, 2), listOfSentry, rozliseniObrazovky, wallWidth)
+            if roomType == 1:
+                pocetSpawnutychRammeru = random.randint(1, 3)
+                pocetSpawnutychSentry = random.randint(0, 2)
+                spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
+                SpawnNumberOfSentry(random.randint(0, 2), listOfSentry, rozliseniObrazovky, wallWidth)
+                pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
 
             # [...] edits the original array instead of creating temporary array (from numpy)       
             element[...] = [
@@ -284,11 +298,6 @@ def Main():
                 listOfSentry,
                 listOfSentryProjectile
             ] 
-
-    #Empties the spawn room list of enemies, aka removes all enemies from spawn room
-    grid[middlecord[0], middlecord[1]][2] = []
-    grid[middlecord[0], middlecord[1]][4] = []
-
 
     def KontrolaOutOfBounds(rozliseni, Grid):
         velikostHrace = hracRect[2]
