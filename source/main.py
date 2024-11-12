@@ -31,6 +31,9 @@ def Main():
     #plugColor = (45, 40, 29)
     plugColor = (51, 46, 37)
     rozliseniObrazovky = (1920, 1080)
+    bossWallWidth = 50
+    global barvyPresPlate
+    barvyPresPlate = [(255, 0, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0)]
 
     okno = pygame.display.set_mode((rozliseniObrazovky))
     clock = pygame.time.Clock()
@@ -41,11 +44,12 @@ def Main():
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
     print(grid)
 
-    rychlostHrace = 5
+    rychlostHrace = 10
     velikostHrace = 60
-    global hracRect, hracAnimace
+    global hracRect, hracAnimace, hracHP
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
+    hracHP = 100
     
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
     global last_shot_time
@@ -54,8 +58,19 @@ def Main():
     pocetNepratel = 0
 
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
+    global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
+
+    bossTopWall = pygame.draw.rect(okno, wallColour, (0, 0, rozliseniObrazovky[0], bossWallWidth))
+    bossLeftWall = pygame.draw.rect(okno, wallColour, (0, 0, bossWallWidth, rozliseniObrazovky[0]))
+    bossDownWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - bossWallWidth, rozliseniObrazovky[0], bossWallWidth))
+    bossRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - bossWallWidth, 0, bossWallWidth, rozliseniObrazovky[1]))
+
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
+
+    scalingFactorGOB = 4
+    gameOverBanner = pygame.image.load("source/textures/gameOverBanner.png")
+    gameOverBanner = pygame.transform.scale_by(gameOverBanner, 4)
 
     bossBackground = pygame.image.load("source/textures/boss_background.png")
     activatedPortalBackground = pygame.image.load("source/textures/activated_background.png")
@@ -74,10 +89,15 @@ def Main():
     sentryBase = pygame.image.load("source/textures/sentry_base.png")
     sentryBase = pygame.transform.scale(sentryBase, (112, 112))
 
+    myFont = pygame.font.SysFont('Consolas', 30)
+
     runOneTime = 0
     global runGame, runBossFight
     runGame = 1
     runBossFight = 0
+    global spawnBossSequnce
+    spawnBossSequnce = 0
+    
 
 
     class Projectile:
@@ -98,6 +118,7 @@ def Main():
             return self.projectileRect[0] < 0 or self.projectileRect[0] > resolution[0] or self.projectileRect[1] < 0 or self.projectileRect[1] > resolution[1] or self.penetration < 1
            
     def updateProjectileClass(listProjectiluIndex, rozliseniObrazovky):
+        global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
         for projectily in listProjectiluIndex[:]:
             projectily.movement()
             projectily.draw(okno)
@@ -125,6 +146,8 @@ def Main():
 
             self.velikost = self.rammerRect.width  # The size is now the width of the rectangle
             self.hp = hp
+            self.lastShotTime = random.randint(0, 1)/10
+            self.cooldown = 100
 
             self.currentAcceleration = 0
             self.INCchangeInAccelaration = 0.5
@@ -142,6 +165,14 @@ def Main():
                     #když projectil a rammer střetne
                     listProjectilu.remove(projectil)
                     self.hp -= 10
+
+        def ubyraniHP(self):
+            global hracHP
+            if pygame.Rect.colliderect(hracRect, self.rammerRect):
+                if current_time - self.lastShotTime >= self.cooldown:
+                    hracHP -= 10
+                    self.hp -= 10
+                    self.last_shot_time = current_time
 
 
         def attack(self, hracRect):
@@ -176,6 +207,7 @@ def Main():
             rammer.draw(okno)
             rammer.attack(hracRect)
             rammer.detekceKulek(grid[current_room[0],current_room[1]][3])
+            rammer.ubyraniHP()
 
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
@@ -213,11 +245,17 @@ def Main():
         def despawn(self, resolution): # vrati true kdyz je venku z mapy nebo kulka nema "hp"
             return self.sentryBulletRect[0] < 0 or self.sentryBulletRect[0] > resolution[0] or self.sentryBulletRect[1] < 0 or self.sentryBulletRect[1] > resolution[1] or self.penetration < 1
            
+        def detekceHrace(self):
+            global hracHP
+            if pygame.Rect.colliderect(hracRect, self.sentryBulletRect):
+                self.penetration -= 1
+                hracHP -= 10
 
     def SentryBulletClassUpdate(list):
         for bullet in list:
             bullet.draw()
             bullet.movement()
+            bullet.detekceHrace()
 
             if bullet.despawn(rozliseniObrazovky):
                 list.remove(bullet)
@@ -264,12 +302,20 @@ def Main():
                     listProjectilu.remove(projectil)
                     self.hp -= 10
 
+        def detekceKolizeHrace(self):
+            global hracHP
+
+            if pygame.Rect.colliderect(self.sentryRect, hracRect):
+                hracHP -= 10
+                self.hp -= 10
+
     def sentryClassUpdate(listSentry):
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
             sentry.attack(grid[current_room[0],current_room[1]][5])
             sentry.detekceKulek(grid[current_room[0], current_room[1]][3])
+            sentry.detekceKolizeHrace()
 
             if sentry.hp <= 0:
                 listSentry.remove(sentry)
@@ -354,7 +400,7 @@ def Main():
         last_shot_time = current_time  # čas posledního výstřelu
 
     def DrawRoom(): #Draws walls
-        global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
+        global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug, bossTopWall, bossLeftWall, bossDownWall, bossRightWall
         leftTopWall = pygame.draw.rect(okno, wallColour, (0,0, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
         topLeftWall = pygame.draw.rect(okno, wallColour, (0,0, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
 
@@ -406,8 +452,11 @@ def Main():
             dolniPlug = pygame.draw.rect(okno, plugColor, dolniPlugRect)
             
         global hracRect
-        if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlugRect, rightPlugRect, horniPlugRect, dolniPlugRect]) >= 0:
-            hracRect = copy.copy(playerPosBefore)
+        if runBossFight == 0:
+            if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlugRect, rightPlugRect, horniPlugRect, dolniPlugRect]) >= 0:
+                hracRect = copy.copy(playerPosBefore)
+
+
 
     def pohybHrace(hrac_rect, key_press):
         global HracSeHybe, playerPosBefore, hracAnimace
@@ -451,12 +500,10 @@ def Main():
             case 0: #idle
                 okno.blit(playerTextureIdle, hracRect)
 
-
     def KontrolaTeleportuAHrace(rectHrace):
         global runBossFight, runGame
         teleportRect = pygame.Rect(860, 445, 210, 210)
         if pygame.Rect.colliderect(teleportRect, rectHrace):
-            print(f"{runBossFight}    {runGame}")
             runGame = 0
             runBossFight = 1
 
@@ -472,51 +519,107 @@ def Main():
         else:
             okno.blit(background, [0, 0])
 
+        if hracHP > 0:
+            #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
+            if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
+                vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
+            updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
 
-        #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
-        if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
-            vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
-        updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
+            #RAMMERS  ----
+            rammerClassUpdate(grid[current_room[0],current_room[1]][2])
 
-        #RAMMERS  ----
-        rammerClassUpdate(grid[current_room[0],current_room[1]][2])
+            #Sentry
+            SentryBulletClassUpdate(grid[current_room[0],current_room[1]][5])
+            sentryClassUpdate(grid[current_room[0],current_room[1]][4])
+            
 
-        #Sentry
-        SentryBulletClassUpdate(grid[current_room[0],current_room[1]][5])
-        sentryClassUpdate(grid[current_room[0],current_room[1]][4])
-        
+            #POHYB    ----  
+            pohybHrace(hracRect, key_press)
+            KontrolaOutOfBounds(rozliseniObrazovky, grid)
+            DrawPlayer()
 
-        #POHYB    ----  
+        else:
+            okno.fill(wallColour)
+            okno.blit(gameOverBanner, (rozliseniObrazovky[0]/2 - gameOverBanner.get_width()/2, rozliseniObrazovky[1]/2 - gameOverBanner.get_height()/2))
+
         DrawRoom() #zdi
-        pohybHrace(hracRect, key_press)
-        KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
-        DrawPlayer()
+        #Display HP
+        HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
+        okno.blit(HpTextSurface, (10, 5))
+
         pygame.display.update() 
 
     def DrawBossRoom():
-        global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
-        bossWallWidth = 50
+        global bossTopWall, bossLeftWall, bossDownWall, bossRightWall, hracRect
         bossTopWall = pygame.draw.rect(okno, wallColour, (0, 0, rozliseniObrazovky[0], bossWallWidth))
         bossLeftWall = pygame.draw.rect(okno, wallColour, (0, 0, bossWallWidth, rozliseniObrazovky[0]))
         bossDownWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - bossWallWidth, rozliseniObrazovky[0], bossWallWidth))
         bossRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - bossWallWidth, 0, bossWallWidth, rozliseniObrazovky[1]))
 
+        if pygame.Rect.collidelist(hracRect, [bossTopWall, bossLeftWall, bossDownWall, bossRightWall]) >= 0:
+            hracRect = copy.copy(playerPosBefore)
+
+    def drawPresurePlates():
+        global spawnBossSequnce
+        #Presures plates
+        ofsetX, ofsetY = 220, 170
+        presPlate1 = pygame.draw.rect(okno, barvyPresPlate[0], (ofsetX + bossWallWidth, ofsetY + bossWallWidth, 60, 60)) #vlevo nahoře [0]
+        presPlate2 = pygame.draw.rect(okno, barvyPresPlate[1], (rozliseniObrazovky[0] - (ofsetX + bossWallWidth), ofsetY + bossWallWidth, 60, 60)) #pravo nahoře [1]
+
+        presPlate3 = pygame.draw.rect(okno, barvyPresPlate[2], (ofsetX + bossWallWidth, rozliseniObrazovky[1] - (ofsetY + bossWallWidth), 60, 60)) #vlevo dole [2]
+        presPlate4 = pygame.draw.rect(okno, barvyPresPlate[3], (rozliseniObrazovky[0] - (ofsetX + bossWallWidth), rozliseniObrazovky[1] - (ofsetY + bossWallWidth), 60, 60)) #pravo dole [3]
         
+        if pygame.Rect.collidelist(hracRect, [presPlate1, presPlate2, presPlate3, presPlate4]) >= 0:
+            pressedPresPlate = pygame.Rect.collidelist(hracRect, [presPlate1, presPlate2, presPlate3, presPlate4])
+            match pressedPresPlate:
+                case 0:
+                    barvyPresPlate [0] = (0, 255, 0)
+                case 1:
+                    barvyPresPlate [1] = (0, 255, 0)
+                case 2:
+                    barvyPresPlate [2] = (0, 255, 0)
+                case 3:
+                    barvyPresPlate [3] = (0, 255, 0)
+        if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
+            spawnBossSequnce = 1
+
+
+    def spawnBoss():
+        print("spawn")
+
+    #boss room
     def updateBoss():
         okno.blit(bossBackground, [0,0])
 
-        #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
-        if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
-            vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
-        updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
+        if hracHP > 0:
+            if spawnBossSequnce == 0:
+                drawPresurePlates() #Presure plates
 
-        #POHYB    ----  
+            #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
+            if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
+                vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
+            updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
+
+            if spawnBossSequnce == 1:
+                spawnBoss()
+
+            #POHYB    ----  
+            pohybHrace(hracRect, key_press)
+            KontrolaOutOfBounds(rozliseniObrazovky, grid)
+            DrawPlayer()
+
+        else:
+            okno.fill(wallColour)
+            okno.blit(gameOverBanner, (rozliseniObrazovky[0]/2 - gameOverBanner.get_width()/2, rozliseniObrazovky[1]/2 - gameOverBanner.get_height()/2))
+
+
         DrawBossRoom() #zdi
-        pohybHrace(hracRect, key_press)
-        KontrolaOutOfBounds(rozliseniObrazovky, grid)
 
-        DrawPlayer()
+        #Display HP
+        HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
+        okno.blit(HpTextSurface, (10, 5))
+
         pygame.display.update() 
 
     while True:
@@ -541,6 +644,7 @@ def Main():
             update()
         else:
             updateBoss()
+
 
 ################################################################################################################################################################################################################################
 
