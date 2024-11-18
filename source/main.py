@@ -50,6 +50,11 @@ def Main():
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
     hracHP = 100
+    hracMaximumHp = copy.copy(hracHP)
+
+    global currentXP, maxXP
+    currentXP = 0
+    maxXP = 100
     
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
     global last_shot_time
@@ -98,6 +103,8 @@ def Main():
     global spawnBossSequnce
     spawnBossSequnce = 0
     
+    global upgradeScreenOn
+    upgradeScreenOn = True
 
 
     class Projectile:
@@ -106,6 +113,7 @@ def Main():
             self.angle = angle
             self.rychlost = 15 #rychlost kulky
             self.penetration = penetration #kolikrát může hitnou kulka aka kolik ma zivotu
+            self.damage = 100
 
         def movement(self):
             self.projectileRect[0] += math.cos(self.angle) * self.rychlost
@@ -125,6 +133,7 @@ def Main():
 
             if projectily.despawn(rozliseniObrazovky):
                 listProjectiluIndex.remove(projectily)
+                
             
             if runBossFight == 1:
                 #pygame.Rect.collidelist() returns zero if no collision, otherwise returns index of collided rect
@@ -164,7 +173,7 @@ def Main():
                 if pygame.Rect.colliderect(projectil.projectileRect, self.rammerRect):
                     #když projectil a rammer střetne
                     listProjectilu.remove(projectil)
-                    self.hp -= 10
+                    self.hp -= projectil.damage
 
         def ubyraniHP(self):
             global hracHP
@@ -203,6 +212,7 @@ def Main():
 
 
     def rammerClassUpdate(listRammer):
+        global currentXP
         for rammer in listRammer[:]:
             rammer.draw(okno)
             rammer.attack(hracRect)
@@ -211,6 +221,7 @@ def Main():
 
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
+                currentXP += 10
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -261,8 +272,8 @@ def Main():
                 list.remove(bullet)
 
             if pygame.Rect.collidelist(bullet.sentryBulletRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
-                list.remove(bullet)
-            
+                try: list.remove(bullet)
+                except Exception as e: print(f"error: {e}")
 
     class Sentry:
         def __init__(self, cordX, cordY):
@@ -300,7 +311,7 @@ def Main():
             for projectil in listProjectilu:
                 if pygame.Rect.colliderect(projectil.projectileRect, self.sentryRect):
                     listProjectilu.remove(projectil)
-                    self.hp -= 10
+                    self.hp -= projectil.damage
 
         def detekceKolizeHrace(self):
             global hracHP
@@ -310,6 +321,7 @@ def Main():
                 self.hp -= 10
 
     def sentryClassUpdate(listSentry):
+        global currentXP
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
@@ -319,6 +331,7 @@ def Main():
 
             if sentry.hp <= 0:
                 listSentry.remove(sentry)
+                currentXP += 10
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -342,10 +355,10 @@ def Main():
             listOfSentryProjectile = [] #sentries projectile
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(0, 0)
-                pocetSpawnutychSentry = random.randint(0, 0)
-                spawnNumberOfRammers(random.randint(1, 3), listOfRammers, rozliseniObrazovky, wallWidth)
-                SpawnNumberOfSentry(random.randint(0, 2), listOfSentry, rozliseniObrazovky, wallWidth)
+                pocetSpawnutychRammeru = random.randint(3, 9)
+                pocetSpawnutychSentry = random.randint(2, 5)
+                spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
+                SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
 
             # [...] edits the original array instead of creating temporary array (from numpy)       
@@ -507,6 +520,65 @@ def Main():
             runGame = 0
             runBossFight = 1
 
+    def drawHPbar():
+        hracHpRatio = hracHP / hracMaximumHp
+        pygame.draw.rect(okno, (35, 25, 50), (50, 10, 500, 20)) #gray
+        pygame.draw.rect(okno, (255, 0, 0), (50, 10, 500 * hracHpRatio, 20)) #red
+        pygame.draw.rect(okno, (15, 15, 15), (45, 5, 510, 30), 5) #outline
+
+    def drawXpBar():
+        xpRatio = currentXP / maxXP
+        pygame.draw.rect(okno, (35, 25, 50), (1360, 10, 500, 20)) #gray
+        pygame.draw.rect(okno, (96, 245, 22), (1360, 10, 500 * xpRatio, 20)) #green
+        pygame.draw.rect(okno, (15, 15, 15), (1360, 5, 505, 30), 5) #outline
+
+    def kontrolaXP():
+        global currentXP, maxXP
+        if currentXP >= maxXP:
+            currentXP = 0
+            maxXP = maxXP*1.5
+
+            UpgradeScreen()
+            print("choose upgrade")
+
+    def UpgradeScreen():
+        global upgradeScreenOn
+        upgradeScreen = pygame.image.load("source/textures/Upgrade_screen.png")
+
+        upgrade1 = pygame.image.load("source/textures/upgrady/upgrade1.png")
+        upgrade2 = pygame.image.load("source/textures/upgrady/upgrade2.png")
+        upgrade3 = pygame.image.load("source/textures/upgrady/upgrade3.png")
+
+        listVsechnUpgradu = [upgrade1, upgrade2, upgrade3]
+
+        upgradeSelectionNumber = 3
+        velikostUpgradu = 360
+
+        vybraneUpgrady = []
+        for i in range(upgradeSelectionNumber):
+            vybraneUpgrady.append(random.choice(listVsechnUpgradu))
+
+        while upgradeScreenOn:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            mouseRect = pygame.Rect(mouse_x, mouse_y, 1, 1)
+
+            okno.blit(upgradeScreen, (0, 0))
+
+            upgradeRect = [pygame.Rect(120, 540, velikostUpgradu, velikostUpgradu), pygame.Rect(760, 540, velikostUpgradu, velikostUpgradu), pygame.Rect(1400, 540, velikostUpgradu, velikostUpgradu)]
+            for i in range(upgradeSelectionNumber):
+                pygame.draw.rect(okno, (0, 0, 0), ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu), 15)
+                okno.blit(vybraneUpgrady[i], ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu))
+
+                if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and event.type == pygame.MOUSEBUTTONDOWN:
+                    print(f"Pressed upgrade {i}")
+                    
+
+            pygame.display.flip()
+
     def update():
         global poziceHracePredPohybem
         if [current_room[0], current_room[1]] == [middlecord[0], middlecord[1]]:
@@ -548,6 +620,14 @@ def Main():
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
         okno.blit(HpTextSurface, (10, 5))
 
+        #display XP text
+        XPtextSurface = myFont.render("XP", 1, (255, 255, 255))
+        okno.blit(XPtextSurface, (rozliseniObrazovky[0] - 48, 5))
+
+        drawHPbar()
+        drawXpBar()
+        kontrolaXP()
+
         pygame.display.update() 
 
     def DrawBossRoom():
@@ -559,6 +639,7 @@ def Main():
 
         if pygame.Rect.collidelist(hracRect, [bossTopWall, bossLeftWall, bossDownWall, bossRightWall]) >= 0:
             hracRect = copy.copy(playerPosBefore)
+
 
     def drawPresurePlates():
         global spawnBossSequnce
@@ -618,7 +699,15 @@ def Main():
 
         #Display HP
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
-        okno.blit(HpTextSurface, (10, 5))
+        okno.blit(HpTextSurface, (8, 5))
+
+        #display XP text
+        XPtextSurface = myFont.render("XP", 1, (255, 255, 255))
+        okno.blit(XPtextSurface, (rozliseniObrazovky[0] - 48, 5))
+
+        drawHPbar()
+        drawXpBar()
+        kontrolaXP()
 
         pygame.display.update() 
 
@@ -632,6 +721,7 @@ def Main():
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
         
+
         if runOneTime == 0:
             #stabilazes the rammer's player movement detection
             pohybHrace(hracRect, key_press)
