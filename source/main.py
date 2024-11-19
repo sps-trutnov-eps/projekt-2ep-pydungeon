@@ -164,7 +164,7 @@ def Main():
             self.angle = angle
             self.rychlost = 15 #rychlost kulky
             self.penetration = penetration #kolikrát může hitnou kulka aka kolik ma zivotu
-            self.damage = 8
+            self.damage = 25
 
         def movement(self):
             self.projectileRect[0] += math.cos(self.angle) * self.rychlost
@@ -773,6 +773,7 @@ def Main():
                     if boss.hp <= 0:
                         grid[current_room[0],current_room[1]][6].remove(boss)
                         bossDefeated = True
+                        
 
         else:
             okno.fill(wallColour)
@@ -784,6 +785,9 @@ def Main():
         if bossSpawnSequenceFinished:
             for boss in grid[current_room[0],current_room[1]][6]:
                 boss.drawHPbar()
+
+        if bossDefeated:
+            okno.fill((0, 0, 0))
 
         #Display HP
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
