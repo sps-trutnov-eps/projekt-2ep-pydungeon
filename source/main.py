@@ -65,6 +65,18 @@ def Main():
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
     global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
 
+    leftTopWall = pygame.draw.rect(okno, wallColour, (0,0, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
+    topLeftWall = pygame.draw.rect(okno, wallColour, (0,0, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
+
+    topRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0]/2 + holeSize/2, 0, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
+    rightTopWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - wallWidth, 0, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
+
+    rightDownWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - wallWidth, rozliseniObrazovky[1]/2 + holeSize/2, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
+    downRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0]/2 + holeSize/2, rozliseniObrazovky[1] - wallWidth, rozliseniObrazovky[0]/2 - wallWidth/2, wallWidth))
+
+    LefDowntWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1]/2 + holeSize/2, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
+    DownLeftWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - wallWidth, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
+
     bossTopWall = pygame.draw.rect(okno, wallColour, (0, 0, rozliseniObrazovky[0], bossWallWidth))
     bossLeftWall = pygame.draw.rect(okno, wallColour, (0, 0, bossWallWidth, rozliseniObrazovky[0]))
     bossDownWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - bossWallWidth, rozliseniObrazovky[0], bossWallWidth))
@@ -221,7 +233,7 @@ def Main():
 
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
-                currentXP += 10
+                currentXP += 100
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -533,11 +545,12 @@ def Main():
         pygame.draw.rect(okno, (15, 15, 15), (1360, 5, 505, 30), 5) #outline
 
     def kontrolaXP():
-        global currentXP, maxXP
+        global currentXP, maxXP, upgradeScreenOn
         if currentXP >= maxXP:
             currentXP = 0
             maxXP = maxXP*1.5
 
+            upgradeScreenOn = True
             UpgradeScreen()
             print("choose upgrade")
 
@@ -548,19 +561,25 @@ def Main():
         upgrade1 = pygame.image.load("source/textures/upgrady/upgrade1.png")
         upgrade2 = pygame.image.load("source/textures/upgrady/upgrade2.png")
         upgrade3 = pygame.image.load("source/textures/upgrady/upgrade3.png")
-
-        listVsechnUpgradu = [upgrade1, upgrade2, upgrade3]
+        listVsechnUpgradu = {"DescriptionOfUpgrade1": upgrade1, "DescriptionOfUpgrade2": upgrade2, "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": upgrade3}
 
         upgradeSelectionNumber = 3
         velikostUpgradu = 360
 
+        listUpgraduNaVybirani = copy.copy(listVsechnUpgradu)
+
         vybraneUpgrady = []
+        vybraneDesc = []
         for i in range(upgradeSelectionNumber):
-            vybraneUpgrady.append(random.choice(listVsechnUpgradu))
+            upg = random.choice(list(listUpgraduNaVybirani.items()))
+            vybraneUpgrady.append(upg[1])
+            vybraneDesc.append(upg[0])
+
+            listUpgraduNaVybirani.pop(upg[0])
 
         while upgradeScreenOn:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            for updateEvent in pygame.event.get():
+                if updateEvent.type == pygame.QUIT:
                     sys.exit()
 
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -573,9 +592,12 @@ def Main():
                 pygame.draw.rect(okno, (0, 0, 0), ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu), 15)
                 okno.blit(vybraneUpgrady[i], ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu))
 
-                if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and event.type == pygame.MOUSEBUTTONDOWN:
-                    print(f"Pressed upgrade {i}")
-                    
+                try:
+                    if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and updateEvent.type == pygame.MOUSEBUTTONUP:
+                        print(f"Pressed upgrade {vybraneUpgrady[i]}  desc: {vybraneDesc[i]}")
+                        upgradeScreenOn = False
+                except UnboundLocalError:
+                    print("eroorrr") 
 
             pygame.display.flip()
 
