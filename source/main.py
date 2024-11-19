@@ -117,7 +117,46 @@ def Main():
     
     global upgradeScreenOn
     upgradeScreenOn = True
+    global bossSpawnSequenceFinished
+    bossSpawnSequenceFinished = False
+    global bossDefeated
+    bossDefeated = False
 
+    class Boss:
+        def __init__(self):
+            self.hp = 1500
+            self.maxHP = 1500
+
+            self.velikost = 250
+            self.bossRect = pygame.Rect(rozliseniObrazovky[0]/2 - self.velikost/2, rozliseniObrazovky[1]/2 - self.velikost/2, self.velikost, self.velikost)
+
+            self.bossHpRatio = self.hp/self.maxHP
+
+        def draw(self):
+            outlineThickness = 25
+            pygame.draw.rect(okno, (200, 15, 45), (self.bossRect[0] - outlineThickness, self.bossRect[1] - outlineThickness, self.velikost + outlineThickness*2, self.velikost + outlineThickness*2), outlineThickness)
+            pygame.draw.rect(okno, (220, 20, 60), self.bossRect)
+
+        def drawHPbar(self):
+            pygame.draw.rect(okno, (35, 25, 50), (59, 1041, 1803, 31)) #gray
+            pygame.draw.rect(okno, (200, 15, 45), (59, 1041, 1803*self.bossHpRatio, 31)) #red
+            pygame.draw.rect(okno, (15, 15, 15), (51, 1033, 1819, 47), 8) #outline
+
+        def detekceKulek(self, listProjectilu):
+            for projectil in listProjectilu:
+                if pygame.Rect.colliderect(projectil.projectileRect, self.bossRect):
+                    #když projectil a rammer střetne
+                    listProjectilu.remove(projectil)
+                    self.hp -= projectil.damage
+
+        def updateRatio(self):
+            self.bossHpRatio = self.hp / self.maxHP
+            
+        def kolizeHraceBoss(self):
+            global hracHP
+            if pygame.Rect.colliderect(hracRect, self.bossRect):
+                hracHP -= 10
+                self.hp -= 10
 
     class Projectile:
         def __init__(self, projectileRect, angle, penetration=1):
@@ -125,7 +164,7 @@ def Main():
             self.angle = angle
             self.rychlost = 15 #rychlost kulky
             self.penetration = penetration #kolikrát může hitnou kulka aka kolik ma zivotu
-            self.damage = 100
+            self.damage = 8
 
         def movement(self):
             self.projectileRect[0] += math.cos(self.angle) * self.rychlost
@@ -274,6 +313,8 @@ def Main():
                 self.penetration -= 1
                 hracHP -= 10
 
+
+
     def SentryBulletClassUpdate(list):
         for bullet in list:
             bullet.draw()
@@ -356,7 +397,7 @@ def Main():
     #iterates over whole grid  --------- Allows to store list in elements       
     for element in numpy.nditer(grid, flags=['multi_index', 'refs_ok'],op_flags=['readwrite']): 
         if element >= 1 : #iterates over every room (isn't 0 in grid)
-            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles], 4[listOfSentries], 5[listOfSentryProjectile]]
+            # [0type, 1layout, 2[listOfRammers], 3[listOfProjectiles], 4[listOfSentries], 5[listOfSentryProjectile], 6[listBoss]]
 
             #Temporar var
             roomType = int(element) #if room is normal (#1), spawn (2#), etc
@@ -365,10 +406,11 @@ def Main():
             listOfProjectiles = [] #empty till bullets are shot from player
             listOfSentry = [] #list of sentryes in room
             listOfSentryProjectile = [] #sentries projectile
+            listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(3, 9)
-                pocetSpawnutychSentry = random.randint(2, 5)
+                pocetSpawnutychRammeru = random.randint(0, 0)
+                pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -380,7 +422,8 @@ def Main():
                 listOfRammers, 
                 listOfProjectiles,
                 listOfSentry,
-                listOfSentryProjectile
+                listOfSentryProjectile,
+                listBoss
             ]
 
     def KontrolaOutOfBounds(rozliseni, Grid):
@@ -622,11 +665,10 @@ def Main():
             #RAMMERS  ----
             rammerClassUpdate(grid[current_room[0],current_room[1]][2])
 
-            #Sentry
+            #Sentry   ----
             SentryBulletClassUpdate(grid[current_room[0],current_room[1]][5])
             sentryClassUpdate(grid[current_room[0],current_room[1]][4])
             
-
             #POHYB    ----  
             pohybHrace(hracRect, key_press)
             KontrolaOutOfBounds(rozliseniObrazovky, grid)
@@ -684,15 +726,24 @@ def Main():
                     barvyPresPlate [2] = (0, 255, 0)
                 case 3:
                     barvyPresPlate [3] = (0, 255, 0)
-        if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
+
+        # if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
+        #     spawnBossSequnce = 1
+
+        if barvyPresPlate == [(0, 255, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0),]:
             spawnBossSequnce = 1
 
-
     def spawnBoss():
-        print("spawn")
+        global bossSpawnSequenceFinished
+
+        if bossSpawnSequenceFinished == False:
+            #spawn sequnce
+            grid[current_room[0],current_room[1]][6].append(Boss())
+            bossSpawnSequenceFinished = True
 
     #boss room
     def updateBoss():
+        global bossDefeated
         okno.blit(bossBackground, [0,0])
 
         if hracHP > 0:
@@ -712,12 +763,27 @@ def Main():
             KontrolaOutOfBounds(rozliseniObrazovky, grid)
             DrawPlayer()
 
+            if bossSpawnSequenceFinished:
+                for boss in grid[current_room[0],current_room[1]][6]:
+                    boss.draw()
+                    boss.detekceKulek(grid[current_room[0], current_room[1]][3])
+                    boss.updateRatio()
+                    boss.kolizeHraceBoss()
+
+                    if boss.hp <= 0:
+                        grid[current_room[0],current_room[1]][6].remove(boss)
+                        bossDefeated = True
+
         else:
             okno.fill(wallColour)
             okno.blit(gameOverBanner, (rozliseniObrazovky[0]/2 - gameOverBanner.get_width()/2, rozliseniObrazovky[1]/2 - gameOverBanner.get_height()/2))
 
 
         DrawBossRoom() #zdi
+
+        if bossSpawnSequenceFinished:
+            for boss in grid[current_room[0],current_room[1]][6]:
+                boss.drawHPbar()
 
         #Display HP
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
@@ -742,6 +808,7 @@ def Main():
 
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
+        mousePosX, mousePoxY = pygame.mouse.get_pos()
         
 
         if runOneTime == 0:
@@ -756,6 +823,10 @@ def Main():
             update()
         else:
             updateBoss()
+
+        print(f"X: {mousePosX}, Y: {mousePoxY}")
+
+        
 
 
 ################################################################################################################################################################################################################################
