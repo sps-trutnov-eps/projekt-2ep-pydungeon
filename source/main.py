@@ -44,6 +44,7 @@ def Main():
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
     print(grid)
 
+    global rychlostHrace
     rychlostHrace = 10
     velikostHrace = 60
     global hracRect, hracAnimace, hracHP
@@ -409,7 +410,7 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(0, 0)
+                pocetSpawnutychRammeru = random.randint(5, 5)
                 pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
@@ -598,13 +599,18 @@ def Main():
             print("choose upgrade")
 
     def UpgradeScreen():
-        global upgradeScreenOn
+        global upgradeScreenOn, rychlostHrace
         upgradeScreen = pygame.image.load("source/textures/Upgrade_screen.png")
 
         upgrade1 = pygame.image.load("source/textures/upgrady/upgrade1.png")
         upgrade2 = pygame.image.load("source/textures/upgrady/upgrade2.png")
         upgrade3 = pygame.image.load("source/textures/upgrady/upgrade3.png")
-        listVsechnUpgradu = {"DescriptionOfUpgrade1": upgrade1, "DescriptionOfUpgrade2": upgrade2, "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": upgrade3}
+        upgradeSpeed = pygame.image.load("source/textures/upgrady/UpgradeSpeed.png")
+        listVsechnUpgradu = {
+            "DescriptionOfUpgrade1": upgrade1,
+            "DescriptionOfUpgrade2": upgrade2,
+            "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": upgrade3,
+            "Increases your movement speed": upgradeSpeed}
 
         upgradeSelectionNumber = 3
         velikostUpgradu = 360
@@ -638,6 +644,16 @@ def Main():
                 try:
                     if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and updateEvent.type == pygame.MOUSEBUTTONUP:
                         print(f"Pressed upgrade {vybraneUpgrady[i]}  desc: {vybraneDesc[i]}")
+
+                        if vybraneUpgrady[i] == upgrade1:
+                            pass
+                        elif vybraneUpgrady[i] == upgrade2:
+                            pass
+                        elif vybraneUpgrady[i] == upgrade3:
+                            pass
+                        elif vybraneUpgrady[i] == upgradeSpeed:
+                            rychlostHrace += 2
+
                         upgradeScreenOn = False
                 except UnboundLocalError:
                     print("eroorrr") 
@@ -828,7 +844,7 @@ def Main():
         else:
             updateBoss()
 
-        print(f"X: {mousePosX}, Y: {mousePoxY}")
+        # print(f"X: {mousePosX}, Y: {mousePoxY}")
 
         
 
