@@ -80,6 +80,7 @@ def Main():
     global last_shot_time
     last_shot_time = 0
 
+    global pocetNepratel
     pocetNepratel = 0
 
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
@@ -291,7 +292,7 @@ def Main():
 
 
     def rammerClassUpdate(listRammer):
-        global currentXP, lifeStealAmount, hracHP
+        global currentXP, lifeStealAmount, hracHP, pocetNepratel
         for rammer in listRammer[:]:
             rammer.draw(okno)
             rammer.attack(hracRect)
@@ -302,6 +303,7 @@ def Main():
                 listRammer.remove(rammer)
                 currentXP += 100
                 hracHP += lifeStealAmount
+                pocetNepratel -= 1
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -358,6 +360,7 @@ def Main():
                 try: list.remove(bullet)
                 except: pass
                 hracHP += lifeStealAmount
+                
 
     class Sentry:
         def __init__(self, cordX, cordY):
@@ -417,6 +420,7 @@ def Main():
                 listSentry.remove(sentry)
                 currentXP += 10
                 hracHP += lifeStealAmount
+                pocetNepratel += 1
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -608,6 +612,10 @@ def Main():
             runBossFight = 1
 
     def drawHPbar():
+        global hracHP, hracMaximumHp
+        if hracHP > hracMaximumHp:
+            hracHP = hracMaximumHp
+
         hracHpRatio = hracHP / hracMaximumHp
         pygame.draw.rect(okno, (35, 25, 50), (50, 10, 500, 20)) #gray
         pygame.draw.rect(okno, (255, 0, 0), (50, 10, 500 * hracHpRatio, 20)) #red
@@ -640,8 +648,8 @@ def Main():
         
         listVsechnUpgradu = {
             "Increases your damage": UpgradeDamage,
-            "DescriptionOfUpgrade2": UpgradeFirerate,
-            "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": UpgradeHealth,
+            "Increases rate of fire": UpgradeFirerate,
+            "Increases your maximum health": UpgradeHealth,
             "Increases your movement speed": upgradeSpeed,
             "Increase gain of HP from kills": UpgradeLifeSteal}
 
@@ -671,11 +679,11 @@ def Main():
 
             upgradeRect = [pygame.Rect(120, 540, velikostUpgradu, velikostUpgradu), pygame.Rect(760, 540, velikostUpgradu, velikostUpgradu), pygame.Rect(1400, 540, velikostUpgradu, velikostUpgradu)]
             for i in range(upgradeSelectionNumber):
-                pygame.draw.rect(okno, (0, 0, 0), ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu), 15)
-                okno.blit(vybraneUpgrady[i], ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 120, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu))
+                pygame.draw.rect(okno, (0, 0, 0), ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 142, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu), 15)
+                okno.blit(vybraneUpgrady[i], ((rozliseniObrazovky[0]/upgradeSelectionNumber*i) + 142, rozliseniObrazovky[1]/2 - velikostUpgradu/2 + 180, velikostUpgradu, velikostUpgradu))
 
                 try:
-                    if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and updateEvent.type == pygame.MOUSEBUTTONUP:
+                    if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and updateEvent.type == pygame.MOUSEBUTTONUP: #on click
                         print(f"Pressed upgrade {vybraneUpgrady[i]}  desc: {vybraneDesc[i]}")
 
                         if vybraneUpgrady[i] == UpgradeDamage:
@@ -691,9 +699,20 @@ def Main():
                             rychlostHrace += math.log(rychlostHrace, 8) + 1
 
                         elif vybraneUpgrady[i] == UpgradeLifeSteal:
-                            lifeStealAmount += 10
+                            lifeStealAmount += 5
 
                         upgradeScreenOn = False
+
+                    if pygame.Rect.colliderect(mouseRect, upgradeRect[i]): #on hover
+                        DescriptionTextSurface = myFont.render(vybraneDesc[i], 1, (199, 196, 196))
+
+                        widthOfText = DescriptionTextSurface.get_width()
+                        heightOfText = DescriptionTextSurface.get_height()
+
+                        pygame.draw.rect(okno, (66, 44, 44), (rozliseniObrazovky[0]/2 - widthOfText/2, 950, widthOfText, heightOfText))
+
+                        okno.blit(DescriptionTextSurface, (rozliseniObrazovky[0]/2 - widthOfText/2, 950))
+
                 except UnboundLocalError:
                     pass
 
@@ -883,9 +902,8 @@ def Main():
         else:
             updateBoss()
 
-        # print(f"X: {mousePosX}, Y: {mousePoxY}")
+        print(f"x: {mousePosX}    y: {mousePoxY}")
 
-        print(cooldown)
       
 ################################################################################################################################################################################################################################
 
