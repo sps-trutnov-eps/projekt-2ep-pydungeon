@@ -67,13 +67,16 @@ def Main():
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
     hracHP = 100
+    global hracMaximumHp
     hracMaximumHp = copy.copy(hracHP)
 
     global currentXP, maxXP
     currentXP = 0
     maxXP = 100
     
+    global cooldown
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
+
     global last_shot_time
     last_shot_time = 0
 
@@ -132,12 +135,18 @@ def Main():
     global spawnBossSequnce
     spawnBossSequnce = 0
     
+    global projectileDamage
+    projectileDamage = 25
+
     global upgradeScreenOn
     upgradeScreenOn = True
     global bossSpawnSequenceFinished
     bossSpawnSequenceFinished = False
     global bossDefeated
     bossDefeated = False
+
+    global lifeStealAmount
+    lifeStealAmount = 0
 
     class Boss:
         def __init__(self):
@@ -181,9 +190,11 @@ def Main():
             self.angle = angle
             self.rychlost = 15 #rychlost kulky
             self.penetration = penetration #kolikrát může hitnou kulka aka kolik ma zivotu
-            self.damage = 25
+            self.damage = projectileDamage
 
         def movement(self):
+            self.damage = projectileDamage
+
             self.projectileRect[0] += math.cos(self.angle) * self.rychlost
             self.projectileRect[1] += math.sin(self.angle) * self.rychlost
 
@@ -280,7 +291,7 @@ def Main():
 
 
     def rammerClassUpdate(listRammer):
-        global currentXP
+        global currentXP, lifeStealAmount, hracHP
         for rammer in listRammer[:]:
             rammer.draw(okno)
             rammer.attack(hracRect)
@@ -290,6 +301,7 @@ def Main():
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
                 currentXP += 100
+                hracHP += lifeStealAmount
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -333,6 +345,7 @@ def Main():
 
 
     def SentryBulletClassUpdate(list):
+        global hracHP, lifeStealAmount
         for bullet in list:
             bullet.draw()
             bullet.movement()
@@ -343,7 +356,8 @@ def Main():
 
             if pygame.Rect.collidelist(bullet.sentryBulletRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
                 try: list.remove(bullet)
-                except Exception as e: print(f"error: {e}")
+                except: pass
+                hracHP += lifeStealAmount
 
     class Sentry:
         def __init__(self, cordX, cordY):
@@ -391,7 +405,7 @@ def Main():
                 self.hp -= 10
 
     def sentryClassUpdate(listSentry):
-        global currentXP
+        global currentXP, hracHP, lifeStealAmount
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
@@ -402,6 +416,7 @@ def Main():
             if sentry.hp <= 0:
                 listSentry.remove(sentry)
                 currentXP += 10
+                hracHP += lifeStealAmount
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -612,21 +627,23 @@ def Main():
 
             upgradeScreenOn = True
             UpgradeScreen()
-            print("choose upgrade")
 
     def UpgradeScreen():
-        global upgradeScreenOn, rychlostHrace
+        global upgradeScreenOn, rychlostHrace, projectileDamage, cooldown, hracMaximumHp, lifeStealAmount
         upgradeScreen = pygame.image.load("source/textures/Upgrade_screen.png")
 
-        upgrade1 = pygame.image.load("source/textures/upgrady/upgrade1.png")
-        upgrade2 = pygame.image.load("source/textures/upgrady/upgrade2.png")
-        upgrade3 = pygame.image.load("source/textures/upgrady/upgrade3.png")
+        UpgradeDamage = pygame.image.load("source/textures/upgrady/UpgradeDamage.png")
+        UpgradeFirerate = pygame.image.load("source/textures/upgrady/UpgradeFirerate.png")
+        UpgradeHealth = pygame.image.load("source/textures/upgrady/UpgradeHealth.png")
         upgradeSpeed = pygame.image.load("source/textures/upgrady/UpgradeSpeed.png")
+        UpgradeLifeSteal = pygame.image.load("source/textures/upgrady/UpgradeLifeSteal.png")
+        
         listVsechnUpgradu = {
-            "DescriptionOfUpgrade1": upgrade1,
-            "DescriptionOfUpgrade2": upgrade2,
-            "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": upgrade3,
-            "Increases your movement speed": upgradeSpeed}
+            "Increases your damage": UpgradeDamage,
+            "DescriptionOfUpgrade2": UpgradeFirerate,
+            "Lonnnnnnnnnnnnnng descriiiiiption of UPPPGRAde numero 3333 a": UpgradeHealth,
+            "Increases your movement speed": upgradeSpeed,
+            "Increase gain of HP from kills": UpgradeLifeSteal}
 
         upgradeSelectionNumber = 3
         velikostUpgradu = 360
@@ -661,18 +678,24 @@ def Main():
                     if pygame.Rect.colliderect(mouseRect, upgradeRect[i]) and updateEvent.type == pygame.MOUSEBUTTONUP:
                         print(f"Pressed upgrade {vybraneUpgrady[i]}  desc: {vybraneDesc[i]}")
 
-                        if vybraneUpgrady[i] == upgrade1:
-                            pass
-                        elif vybraneUpgrady[i] == upgrade2:
-                            pass
-                        elif vybraneUpgrady[i] == upgrade3:
-                            pass
+                        if vybraneUpgrady[i] == UpgradeDamage:
+                            projectileDamage += 8
+
+                        elif vybraneUpgrady[i] == UpgradeFirerate:
+                            cooldown -= 20
+
+                        elif vybraneUpgrady[i] == UpgradeHealth:
+                            hracMaximumHp += 30
+
                         elif vybraneUpgrady[i] == upgradeSpeed:
-                            rychlostHrace += 2
+                            rychlostHrace += math.log(rychlostHrace, 8) + 1
+
+                        elif vybraneUpgrady[i] == UpgradeLifeSteal:
+                            lifeStealAmount += 10
 
                         upgradeScreenOn = False
                 except UnboundLocalError:
-                    print("eroorrr") 
+                    pass
 
             pygame.display.flip()
 
@@ -862,9 +885,8 @@ def Main():
 
         # print(f"X: {mousePosX}, Y: {mousePoxY}")
 
-        
-
-
+        print(cooldown)
+      
 ################################################################################################################################################################################################################################
 
 if __name__ == '__main__':
