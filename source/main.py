@@ -445,7 +445,7 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(5, 5)
+                pocetSpawnutychRammeru = random.randint(0, 0)
                 pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
@@ -862,6 +862,8 @@ def Main():
 
         if bossDefeated:
             okno.fill((0, 0, 0))
+
+            
 
         #Display HP
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
