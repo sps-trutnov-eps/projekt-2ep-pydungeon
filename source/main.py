@@ -41,7 +41,7 @@ def Menu():
 def Main():
     pygame.init()
 
-    holeSize = 250
+    holeSize = 350
     wallWidth = 100
     wallColour = (51, 46, 37)
     #plugColor = (45, 40, 29)
@@ -106,7 +106,6 @@ def Main():
     global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
-    scalingFactorGOB = 4
     gameOverBanner = pygame.image.load("source/textures/gameOverBanner.png")
     gameOverBanner = pygame.transform.scale_by(gameOverBanner, 4)
 
@@ -152,6 +151,8 @@ def Main():
     global difficulty, score
     difficulty = 1
     score = 0
+    global i
+    i = 1
 
     class Boss:
         def __init__(self, difficulty):
@@ -162,6 +163,13 @@ def Main():
             self.bossRect = pygame.Rect(rozliseniObrazovky[0]/2 - self.velikost/2, rozliseniObrazovky[1]/2 - self.velikost/2, self.velikost, self.velikost)
 
             self.bossHpRatio = self.hp/self.maxHP
+            self.delka1 = 1
+            self.delka2 = 1
+            self.delka3 = 1
+            self.delka4 = 1
+
+            self.attacking = 0
+            self.finishedAttacking = True
 
         def draw(self):
             outlineThickness = 25
@@ -189,6 +197,76 @@ def Main():
                 hracHP -= 10
                 self.hp -= 10
 
+
+
+        def attack1(self):
+            velikost = 350
+
+            if self.delka1 <= rozliseniObrazovky[0]:
+                self.delka1 += 10
+            else:
+                self.delka1 = 1
+                self.attacking = 0
+
+            attackRect1 = (0, 0, self.delka1, velikost)
+            attackRect2 = (0, rozliseniObrazovky[1] - velikost, self.delka1, velikost)
+
+            pygame.draw.rect(okno, (255, 0, 0), attackRect1)
+            pygame.draw.rect(okno, (255, 0, 0), attackRect2)
+
+            checkCollisions(attackRect1, attackRect2)
+
+        def attack2(self):
+            velikost = 650
+
+            if self.delka2 <= rozliseniObrazovky[1]:
+                self.delka2 += 8
+            else:
+                self.delka2 = 1
+                self.attacking = 0
+
+            attackRect1 = (0, 0, velikost, self.delka2)
+            attackRect2 = (rozliseniObrazovky[0] - velikost, 0, velikost, self.delka2)
+
+            pygame.draw.rect(okno, (255, 0, 0), attackRect1)
+            pygame.draw.rect(okno, (255, 0, 0), attackRect2)
+
+            checkCollisions(attackRect1, attackRect2)
+
+        def attack3(self):
+            velikost = 350
+
+            if self.delka3 <= rozliseniObrazovky[0]:
+                self.delka3 += 10
+            else:
+                self.delka3 = 1
+                self.attacking = 0
+
+            attackRect1 = (rozliseniObrazovky[0] - self.delka3, 0, self.delka3, velikost)
+            attackRect2 = (rozliseniObrazovky[0] - self.delka3, rozliseniObrazovky[1] - velikost, self.delka3, velikost)
+
+            pygame.draw.rect(okno, (255, 0, 0), attackRect1)
+            pygame.draw.rect(okno, (255, 0, 0), attackRect2)
+
+            checkCollisions(attackRect1, attackRect2)
+
+        def attack4(self):
+            velikost = 650
+
+            if self.delka4 <= rozliseniObrazovky[1]:
+                self.delka4 += 8
+            else:
+                self.delka4 = 1
+                self.attacking = 0
+
+            attackRect1 = (0, rozliseniObrazovky[1] - self.delka4, velikost, self.delka4)
+            attackRect2 = (rozliseniObrazovky[0] - velikost, rozliseniObrazovky[1] - self.delka4, velikost, self.delka4)
+
+            pygame.draw.rect(okno, (255, 0, 0), attackRect1)
+            pygame.draw.rect(okno, (255, 0, 0), attackRect2)
+
+            checkCollisions(attackRect1, attackRect2)
+
     class Projectile:
         def __init__(self, projectileRect, angle, penetration=1):
             self.projectileRect = projectileRect
@@ -208,12 +286,16 @@ def Main():
 
         def despawn(self, resolution): # vrati true kdyz je venku z mapy nebo kulka nema "hp"
             return self.projectileRect[0] < 0 or self.projectileRect[0] > resolution[0] or self.projectileRect[1] < 0 or self.projectileRect[1] > resolution[1] or self.penetration < 1
+        
+        def updateDamage(self, difficulty):
+            self.damage = self.damage*(1/1+difficulty/10)
            
     def updateProjectileClass(listProjectiluIndex, rozliseniObrazovky):
         global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
         for projectily in listProjectiluIndex[:]:
             projectily.movement()
             projectily.draw(okno)
+            projectily.updateDamage(difficulty)
 
             if projectily.despawn(rozliseniObrazovky):
                 listProjectiluIndex.remove(projectily)
@@ -309,7 +391,7 @@ def Main():
                 currentXP += 100
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
-                score += 100*difficulty
+                score += 102*difficulty
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -427,7 +509,7 @@ def Main():
                 currentXP += 10
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
-                score += 100*difficulty
+                score += 103*difficulty
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -452,8 +534,8 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(5, 6)
-                pocetSpawnutychSentry = random.randint(2, 5)
+                pocetSpawnutychRammeru = random.randint(0, 0)
+                pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -566,7 +648,10 @@ def Main():
             if pygame.Rect.collidelist(hracRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlugRect, rightPlugRect, horniPlugRect, dolniPlugRect]) >= 0:
                 hracRect = copy.copy(playerPosBefore)
 
-
+    def checkCollisions(rect1, rect2):
+        global hracHP
+        if pygame.Rect.collidelist(hracRect, [rect1, rect2]) >= 0:
+            hracHP -= 10
 
     def pohybHrace(hrac_rect, key_press):
         global HracSeHybe, playerPosBefore, hracAnimace
@@ -745,6 +830,7 @@ def Main():
             #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
             if pygame.mouse.get_pressed()[0] and current_time - last_shot_time >= cooldown:
                 vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
+
             updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
 
             #RAMMERS  ----
@@ -828,7 +914,7 @@ def Main():
 
     #boss room
     def updateBoss():
-        global bossDefeated
+        global bossDefeated, score
         okno.blit(bossBackground, [0,0])
 
         if hracHP > 0:
@@ -855,6 +941,18 @@ def Main():
                     boss.updateRatio()
                     boss.kolizeHraceBoss()
 
+                    if boss.attacking == 0:
+                        boss.attacking = random.randint(1, 4)
+                
+                    if boss.attacking == 1:
+                        boss.attack1()
+                    elif boss.attacking == 2:
+                        boss.attack2()
+                    elif boss.attacking == 3:
+                        boss.attack3()
+                    elif boss.attacking == 4:
+                        boss.attack4()
+                    
                     if boss.hp <= 0:
                         grid[current_room[0],current_room[1]][6].remove(boss)
                         bossDefeated = True
@@ -871,9 +969,17 @@ def Main():
             for boss in grid[current_room[0],current_room[1]][6]:
                 boss.drawHPbar()
 
+        
         if bossDefeated:
+            global i
+            if i == 1:
+                score += 1320*difficulty
+                #randomises a score so it looks more natural
+                score = score*(1 + random.randint(2, 10)/10) 
+                i = 0
+
             okno.fill((0, 0, 0))
-            scoreText = myFont.render(f"Score: {score}", 1, (255, 255, 255))
+            scoreText = myFont.render(f"Score: {int(score)}", 1, (255, 255, 255))
             difficultyText = myFont.render(f"Difficulty: {difficulty}", 1, (255, 255, 255))
 
             okno.blit(scoreText, (rozliseniObrazovky[0]/2 - scoreText.get_width()/2, rozliseniObrazovky[1]/2 - scoreText.get_height()*2))
@@ -919,7 +1025,8 @@ def Main():
         else:
             updateBoss()
 
-        print(f"x: {mousePosX}    y: {mousePoxY}")
+        
+        # print(f"x: {mousePosX}    y: {mousePoxY}")
 
       
 ################################################################################################################################################################################################################################
