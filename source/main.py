@@ -149,10 +149,14 @@ def Main():
     global lifeStealAmount
     lifeStealAmount = 0
 
+    global difficulty, score
+    difficulty = 1
+    score = 0
+
     class Boss:
-        def __init__(self):
-            self.hp = 1500
-            self.maxHP = 1500
+        def __init__(self, difficulty):
+            self.hp = 1500*difficulty
+            self.maxHP = 1500*difficulty
 
             self.velikost = 250
             self.bossRect = pygame.Rect(rozliseniObrazovky[0]/2 - self.velikost/2, rozliseniObrazovky[1]/2 - self.velikost/2, self.velikost, self.velikost)
@@ -292,7 +296,7 @@ def Main():
 
 
     def rammerClassUpdate(listRammer):
-        global currentXP, lifeStealAmount, hracHP, pocetNepratel
+        global currentXP, lifeStealAmount, hracHP, pocetNepratel, score
         for rammer in listRammer[:]:
             rammer.draw(okno)
             rammer.attack(hracRect)
@@ -301,9 +305,11 @@ def Main():
 
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
+
                 currentXP += 100
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
+                score += 100*difficulty
 
 
     def spawnNumberOfRammers(numberOfRammers, list, rozliseniObrazovky, wallWidth):
@@ -408,7 +414,7 @@ def Main():
                 self.hp -= 10
 
     def sentryClassUpdate(listSentry):
-        global currentXP, hracHP, lifeStealAmount
+        global currentXP, hracHP, lifeStealAmount, score, pocetNepratel
         for sentry in listSentry:
             sentry.draw()
             sentry.rotateCannon()
@@ -420,7 +426,8 @@ def Main():
                 listSentry.remove(sentry)
                 currentXP += 10
                 hracHP += lifeStealAmount
-                pocetNepratel += 1
+                pocetNepratel -= 1
+                score += 100*difficulty
 
     def SpawnNumberOfSentry(numberOfSentry, list, rozliseniObrazovky, wallWidth):
         for number in range(numberOfSentry):
@@ -445,8 +452,8 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(0, 0)
-                pocetSpawnutychSentry = random.randint(0, 0)
+                pocetSpawnutychRammeru = random.randint(5, 6)
+                pocetSpawnutychSentry = random.randint(2, 5)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -487,7 +494,6 @@ def Main():
         except IndexError:
             print("ERROR")
 
-        
 
     #NOTE need to make local function
     def vystreleniProjectilu(listProjectilu, hracRect, current_time):
@@ -637,7 +643,7 @@ def Main():
             UpgradeScreen()
 
     def UpgradeScreen():
-        global upgradeScreenOn, rychlostHrace, projectileDamage, cooldown, hracMaximumHp, lifeStealAmount
+        global upgradeScreenOn, rychlostHrace, projectileDamage, cooldown, hracMaximumHp, lifeStealAmount, difficulty
         upgradeScreen = pygame.image.load("source/textures/Upgrade_screen.png")
 
         UpgradeDamage = pygame.image.load("source/textures/upgrady/UpgradeDamage.png")
@@ -645,13 +651,15 @@ def Main():
         UpgradeHealth = pygame.image.load("source/textures/upgrady/UpgradeHealth.png")
         upgradeSpeed = pygame.image.load("source/textures/upgrady/UpgradeSpeed.png")
         UpgradeLifeSteal = pygame.image.load("source/textures/upgrady/UpgradeLifeSteal.png")
+        CurseUpgrade = pygame.image.load("source/textures/upgrady/CurseUpgrade.png")
         
         listVsechnUpgradu = {
             "Increases your damage": UpgradeDamage,
             "Increases rate of fire": UpgradeFirerate,
             "Increases your maximum health": UpgradeHealth,
             "Increases your movement speed": upgradeSpeed,
-            "Increase gain of HP from kills": UpgradeLifeSteal}
+            "Increase gain of HP from kills": UpgradeLifeSteal,
+            "Increases difficulty but increase Score gain": CurseUpgrade}
 
         upgradeSelectionNumber = 3
         velikostUpgradu = 360
@@ -700,6 +708,9 @@ def Main():
 
                         elif vybraneUpgrady[i] == UpgradeLifeSteal:
                             lifeStealAmount += 5
+
+                        elif vybraneUpgrady[i] == CurseUpgrade:
+                            difficulty += 1
 
                         upgradeScreenOn = False
 
@@ -812,7 +823,7 @@ def Main():
 
         if bossSpawnSequenceFinished == False:
             #spawn sequnce
-            grid[current_room[0],current_room[1]][6].append(Boss())
+            grid[current_room[0],current_room[1]][6].append(Boss(difficulty))
             bossSpawnSequenceFinished = True
 
     #boss room
@@ -862,9 +873,13 @@ def Main():
 
         if bossDefeated:
             okno.fill((0, 0, 0))
+            scoreText = myFont.render(f"Score: {score}", 1, (255, 255, 255))
+            difficultyText = myFont.render(f"Difficulty: {difficulty}", 1, (255, 255, 255))
+
+            okno.blit(scoreText, (rozliseniObrazovky[0]/2 - scoreText.get_width()/2, rozliseniObrazovky[1]/2 - scoreText.get_height()*2))
+            okno.blit(difficultyText, (rozliseniObrazovky[0]/2 - difficultyText.get_width()/2, rozliseniObrazovky[1]/2 + difficultyText.get_height()*1.5))
 
             
-
         #Display HP
         HpTextSurface = myFont.render(f"HP: {hracHP}", 1, (255, 255, 255))
         okno.blit(HpTextSurface, (8, 5))

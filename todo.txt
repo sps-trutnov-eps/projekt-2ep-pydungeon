@@ -1,0 +1,3 @@
+add onEnemyDeath() function
+
+reformat global var at top
