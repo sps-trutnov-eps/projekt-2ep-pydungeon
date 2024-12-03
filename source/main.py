@@ -156,11 +156,12 @@ def Main():
 
     class Boss:
         def __init__(self, difficulty):
-            self.hp = 1500*difficulty
-            self.maxHP = 1500*difficulty
+            self.hp = 10000*difficulty
+            self.maxHP = 10000*difficulty
 
             self.velikost = 250
             self.bossRect = pygame.Rect(rozliseniObrazovky[0]/2 - self.velikost/2, rozliseniObrazovky[1]/2 - self.velikost/2, self.velikost, self.velikost)
+            self.rychlost = 3
 
             self.bossHpRatio = self.hp/self.maxHP
             self.delka1 = 1
@@ -197,6 +198,25 @@ def Main():
                 hracHP -= 10
                 self.hp -= 10
 
+        def movement(self, playerRect):
+            # Calculate the direction vector from boss to player
+            dx = playerRect.centerx - self.bossRect.centerx
+            dy = playerRect.centery - self.bossRect.centery
+
+            # Calculate the distance between the two rectangles
+            distance = math.sqrt(dx ** 2 + dy ** 2)
+
+            # Avoid division by zero if the distance is too small
+            if distance == 0:
+                return
+
+            # Normalize the direction vector and scale it by the speed
+            move_x = (dx / distance) * self.rychlost
+            move_y = (dy / distance) * self.rychlost
+
+            # Update bossRect's position
+            self.bossRect.x += move_x
+            self.bossRect.y += move_y
 
 
         def attack1(self):
@@ -940,6 +960,7 @@ def Main():
                     boss.detekceKulek(grid[current_room[0], current_room[1]][3])
                     boss.updateRatio()
                     boss.kolizeHraceBoss()
+                    boss.movement(hracRect)
 
                     if boss.attacking == 0:
                         boss.attacking = random.randint(1, 4)
