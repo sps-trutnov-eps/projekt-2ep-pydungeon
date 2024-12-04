@@ -1,5 +1,5 @@
 import random, numpy
-size = 8
+size = 10
 cordinates = [round((size-1)/2),round((size-1)/2)] #current cordinates, starting at middle
 middlecords = [round((size-1)/2),round((size-1)/2)] #middle of map
 
@@ -59,7 +59,7 @@ def CheckIfCordinateIsInBound(checkedCord):
 
 numberOfRooms = numpy.count_nonzero(map)
 GenerateMap(size)
-GenerateLevel(30)
+GenerateLevel(60)
 
 
 

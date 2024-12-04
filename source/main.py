@@ -41,6 +41,10 @@ def Menu():
 def Main():
     pygame.init()
 
+    global barvyPresPlate, rychlostHrace, hracRect, hracAnimace, hracHP, hracMaximumHp, currentXP, maxXP, cooldown, pocetNepratel, last_shot_time, poziceHracePredPohybem, spawnBossSequnce, runGame, runBossFight, projectileDamage, upgradeScreenOn, bossSpawnSequenceFinished, bossDefeated, difficulty, score, lifeStealAmount, i
+    global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
+    global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
+
     holeSize = 350
     wallWidth = 100
     wallColour = (51, 46, 37)
@@ -48,43 +52,25 @@ def Main():
     plugColor = (51, 46, 37)
     rozliseniObrazovky = (1920, 1080)
     bossWallWidth = 50
-    global barvyPresPlate
     barvyPresPlate = [(255, 0, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0)]
 
     okno = pygame.display.set_mode((rozliseniObrazovky))
     clock = pygame.time.Clock()
 
-    numberOfRooms = levelGeneration.numberOfRooms
     grid = levelGeneration.map #recieves random map from levelGeneration.py    Type -> numpy.array
     middlecord = copy.copy(levelGeneration.middlecords) #middle of grid
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
-    print(grid)
-
-    global rychlostHrace
     rychlostHrace = 10
     velikostHrace = 60
-    global hracRect, hracAnimace, hracHP
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
     hracHP = 100
-    global hracMaximumHp
     hracMaximumHp = copy.copy(hracHP)
-
-    global currentXP, maxXP
     currentXP = 0
     maxXP = 100
-    
-    global cooldown
     cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
-
-    global last_shot_time
     last_shot_time = 0
-
-    global pocetNepratel
     pocetNepratel = 0
-
-    global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
-    global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
 
     leftTopWall = pygame.draw.rect(okno, wallColour, (0,0, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
     topLeftWall = pygame.draw.rect(okno, wallColour, (0,0, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
@@ -103,7 +89,6 @@ def Main():
     bossDownWall = pygame.draw.rect(okno, wallColour, (0, rozliseniObrazovky[1] - bossWallWidth, rozliseniObrazovky[0], bossWallWidth))
     bossRightWall = pygame.draw.rect(okno, wallColour, (rozliseniObrazovky[0] - bossWallWidth, 0, bossWallWidth, rozliseniObrazovky[1]))
 
-    global poziceHracePredPohybem
     poziceHracePredPohybem = pygame.Rect(0, 0, 0, 0)
 
     gameOverBanner = pygame.image.load("source/textures/gameOverBanner.png")
@@ -125,33 +110,19 @@ def Main():
 
     sentryBase = pygame.image.load("source/textures/sentry_base.png")
     sentryBase = pygame.transform.scale(sentryBase, (112, 112))
-
+    
     myFont = pygame.font.SysFont('Consolas', 30)
-
     runOneTime = 0
-    global runGame, runBossFight
     runGame = 1
     runBossFight = 0
-    global spawnBossSequnce
     spawnBossSequnce = 0
-    
-    global projectileDamage
     projectileDamage = 25
-
-    global upgradeScreenOn
     upgradeScreenOn = True
-    global bossSpawnSequenceFinished
     bossSpawnSequenceFinished = False
-    global bossDefeated
     bossDefeated = False
-
-    global lifeStealAmount
     lifeStealAmount = 0
-
-    global difficulty, score
     difficulty = 1
     score = 0
-    global i
     i = 1
 
     class Boss:
@@ -514,6 +485,7 @@ def Main():
             if pygame.Rect.colliderect(self.sentryRect, hracRect):
                 hracHP -= 10
                 self.hp -= 10
+
 
     def sentryClassUpdate(listSentry):
         global currentXP, hracHP, lifeStealAmount, score, pocetNepratel
@@ -1030,7 +1002,6 @@ def Main():
 
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
-        mousePosX, mousePoxY = pygame.mouse.get_pos()
         
 
         if runOneTime == 0:
@@ -1046,10 +1017,6 @@ def Main():
         else:
             updateBoss()
 
-        
-        # print(f"x: {mousePosX}    y: {mousePoxY}")
-
-      
 ################################################################################################################################################################################################################################
 
 if __name__ == '__main__':
