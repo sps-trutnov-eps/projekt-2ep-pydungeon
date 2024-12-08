@@ -59,7 +59,7 @@ def Main():
     grid = levelGeneration.map #recieves random map from levelGeneration.py    Type -> numpy.array
     middlecord = copy.copy(levelGeneration.middlecords) #middle of grid
     current_room = copy.copy(middlecord) #sets current room at middle (spawn room)
-    rychlostHrace = 10
+    rychlostHrace = 7
     velikostHrace = 60
     hracRect = pygame.Rect(rozliseniObrazovky[0]/2 - velikostHrace/2 + 250, rozliseniObrazovky[1]/2 - velikostHrace/2 + 250, velikostHrace, velikostHrace)
     hracAnimace = 0 #0 idle, 1 left, 2, top, 3 right, 4 down
@@ -67,7 +67,7 @@ def Main():
     hracMaximumHp = copy.copy(hracHP)
     currentXP = 0
     maxXP = 100
-    cooldown = 200 # (60/cooldown)krat za sekundu muzes vystrelit
+    cooldown = 300 # (60/cooldown)krat za sekundu muzes vystrelit
     last_shot_time = 0
     pocetNepratel = 0
 
@@ -115,11 +115,11 @@ def Main():
     runGame = 1
     runBossFight = 0
     spawnBossSequence = 0
-    projectileDamage = 25
+    projectileDamage = 20
     upgradeScreenOn = True
     bossSpawnSequenceFinished = False
     bossDefeated = False
-    lifeStealAmount = 0
+    lifeStealAmount = 2
     difficulty = 1
     score = 0
     i = 1
@@ -316,7 +316,7 @@ def Main():
 
             self.currentAcceleration = 0
             self.INCchangeInAccelaration = 0.5
-            self.DECchangeInAccelaration = 0.5
+            self.DECchangeInAccelaration = 0.2
             self.maxSpeed = 6
 
 
@@ -359,8 +359,8 @@ def Main():
                     self.currentAcceleration = self.maxSpeed
             else:
                 self.currentAcceleration -= self.DECchangeInAccelaration/2 #/2 so they glide longer
-                if self.currentAcceleration < 0:
-                    self.currentAcceleration = 0
+                if self.currentAcceleration < 3:
+                    self.currentAcceleration = 3
 
             # Update the rammer's position based on the current acceleration and direction
             self.rammerRect.x += int(self.currentAcceleration * direction.x)
@@ -437,7 +437,6 @@ def Main():
             if pygame.Rect.collidelist(bullet.sentryBulletRect, [topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall]) >= 0:
                 try: list.remove(bullet)
                 except: pass
-                hracHP += lifeStealAmount
                 
 
     class Sentry:
@@ -525,8 +524,8 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(0, 0)
-                pocetSpawnutychSentry = random.randint(0, 0)
+                pocetSpawnutychRammeru = random.randint(5, 10)
+                pocetSpawnutychSentry = random.randint(1, 3)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
