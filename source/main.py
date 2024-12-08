@@ -41,7 +41,7 @@ def Menu():
 def Main():
     pygame.init()
 
-    global barvyPresPlate, rychlostHrace, hracRect, hracAnimace, hracHP, hracMaximumHp, currentXP, maxXP, cooldown, pocetNepratel, last_shot_time, poziceHracePredPohybem, spawnBossSequnce, runGame, runBossFight, projectileDamage, upgradeScreenOn, bossSpawnSequenceFinished, bossDefeated, difficulty, score, lifeStealAmount, i
+    global barvyPresPlate, rychlostHrace, hracRect, hracAnimace, hracHP, hracMaximumHp, currentXP, maxXP, cooldown, pocetNepratel, last_shot_time, poziceHracePredPohybem, spawnBossSequence, runGame, runBossFight, projectileDamage, upgradeScreenOn, bossSpawnSequenceFinished, bossDefeated, difficulty, score, lifeStealAmount, i
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
     global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
 
@@ -115,7 +115,7 @@ def Main():
     runOneTime = 0
     runGame = 1
     runBossFight = 0
-    spawnBossSequnce = 0
+    spawnBossSequence = 0
     projectileDamage = 25
     upgradeScreenOn = True
     bossSpawnSequenceFinished = False
@@ -869,7 +869,7 @@ def Main():
 
 
     def drawPresurePlates():
-        global spawnBossSequnce
+        global spawnBossSequence
         #Presures plates
         ofsetX, ofsetY = 220, 170
         presPlate1 = pygame.draw.rect(okno, barvyPresPlate[0], (ofsetX + bossWallWidth, ofsetY + bossWallWidth, 60, 60)) #vlevo nahoře [0]
@@ -890,11 +890,9 @@ def Main():
                 case 3:
                     barvyPresPlate [3] = (0, 255, 0)
 
-        # if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
-        #     spawnBossSequnce = 1
 
         if barvyPresPlate == [(0, 255, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0),]:
-            spawnBossSequnce = 1
+            spawnBossSequence = 1
 
     def spawnBoss():
         global bossSpawnSequenceFinished
@@ -910,7 +908,7 @@ def Main():
         okno.blit(bossBackground, [0,0])
 
         if hracHP > 0:
-            if spawnBossSequnce == 0:
+            if spawnBossSequence == 0:
                 drawPresurePlates() #Presure plates
 
             #STŘELBA  ----  Vystřelí když uběhl cooldown od posledního výstřelu
@@ -918,7 +916,7 @@ def Main():
                 vystreleniProjectilu(grid[current_room[0], current_room[1]][3], hracRect, current_time)
             updateProjectileClass(grid[current_room[0],current_room[1]][3], rozliseniObrazovky)
 
-            if spawnBossSequnce == 1:
+            if spawnBossSequence == 1:
                 spawnBoss()
 
             #POHYB    ----  
