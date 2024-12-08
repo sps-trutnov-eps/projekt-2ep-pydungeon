@@ -378,7 +378,7 @@ def Main():
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
 
-                currentXP += 10
+                currentXP += 17
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
                 score += 102*difficulty
@@ -497,7 +497,7 @@ def Main():
 
             if sentry.hp <= 0:
                 listSentry.remove(sentry)
-                currentXP += 25
+                currentXP += 45
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
                 score += 103*difficulty
