@@ -47,9 +47,8 @@ def Main():
 
     holeSize = 350
     wallWidth = 100
-    wallColour = (51, 46, 37)
-    #plugColor = (45, 40, 29)
-    plugColor = (51, 46, 37)
+    wallColour = (48, 43, 34)
+    plugColor = (48, 43, 34)
     rozliseniObrazovky = (1920, 1080)
     bossWallWidth = 50
     barvyPresPlate = [(255, 0, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0)]
