@@ -41,9 +41,9 @@ def Menu():
 def Main():
     pygame.init()
 
-    global barvyPresPlate, rychlostHrace, hracRect, hracAnimace, hracHP, hracMaximumHp, currentXP, maxXP, cooldown, pocetNepratel, last_shot_time, poziceHracePredPohybem, spawnBossSequence, runGame, runBossFight, projectileDamage, upgradeScreenOn, bossSpawnSequenceFinished, bossDefeated, difficulty, score, lifeStealAmount, i
+    global barvyPresPlate, rychlostHrace, barvyPresPlate, rychlostHrace, hracRect, hracAnimace, hracHP, hracMaximumHp, currentXP, maxXP, cooldown, pocetNepratel, last_shot_time, poziceHracePredPohybem, spawnBossSequence, runGame, runBossFight, projectileDamage, upgradeScreenOn, bossSpawnSequenceFinished, bossDefeated, difficulty, score, lifeStealAmount, i
     global topLeftWall, leftTopWall, topRightWall, rightTopWall, rightDownWall, downRightWall, LefDowntWall, DownLeftWall, leftPlug, rightPlug, horniPlug, dolniPlug
-    global bossTopWall, bossLeftWall, bossDownWall, bossRightWall
+    global bossTopWall, bossLeftWall, bossDownWall, bossRightWall, spawnBossSequence
 
     holeSize = 350
     wallWidth = 100
@@ -525,8 +525,8 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(5, 10)
-                pocetSpawnutychSentry = random.randint(1, 3)
+                pocetSpawnutychRammeru = random.randint(0, 0)
+                pocetSpawnutychSentry = random.randint(0, 0)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -868,7 +868,8 @@ def Main():
 
 
     def drawPresurePlates():
-        global spawnBossSequence
+        global barvyPresPlate, spawnBossSequence
+
         #Presures plates
         ofsetX, ofsetY = 220, 170
         presPlate1 = pygame.draw.rect(okno, barvyPresPlate[0], (ofsetX + bossWallWidth, ofsetY + bossWallWidth, 60, 60)) #vlevo nahoře [0]
@@ -881,16 +882,17 @@ def Main():
             pressedPresPlate = pygame.Rect.collidelist(hracRect, [presPlate1, presPlate2, presPlate3, presPlate4])
             match pressedPresPlate:
                 case 0:
-                    barvyPresPlate [0] = (0, 255, 0)
+                    barvyPresPlate[0] = (0, 255, 0)
                 case 1:
-                    barvyPresPlate [1] = (0, 255, 0)
+                    barvyPresPlate[1] = (0, 255, 0)
                 case 2:
-                    barvyPresPlate [2] = (0, 255, 0)
+                    barvyPresPlate[2] = (0, 255, 0)
                 case 3:
-                    barvyPresPlate [3] = (0, 255, 0)
+                    barvyPresPlate[3] = (0, 255, 0)
 
-        if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
-            spawnBossSequnce = 1
+        if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0)]:
+            spawnBossSequence = True
+        
 
     def spawnBoss():
         global bossSpawnSequenceFinished
