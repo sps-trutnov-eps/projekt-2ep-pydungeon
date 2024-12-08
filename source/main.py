@@ -378,7 +378,7 @@ def Main():
             if rammer.hp <= 0:
                 listRammer.remove(rammer)
 
-                currentXP += 100
+                currentXP += 17
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
                 score += 102*difficulty
@@ -497,7 +497,7 @@ def Main():
 
             if sentry.hp <= 0:
                 listSentry.remove(sentry)
-                currentXP += 10
+                currentXP += 45
                 hracHP += lifeStealAmount
                 pocetNepratel -= 1
                 score += 103*difficulty
@@ -525,8 +525,8 @@ def Main():
             listBoss = []
 
             if roomType == 1:
-                pocetSpawnutychRammeru = random.randint(0, 0)
-                pocetSpawnutychSentry = random.randint(0, 0)
+                pocetSpawnutychRammeru = random.randint(5, 10)
+                pocetSpawnutychSentry = random.randint(1, 3)
                 spawnNumberOfRammers(pocetSpawnutychRammeru, listOfRammers, rozliseniObrazovky, wallWidth)
                 SpawnNumberOfSentry(pocetSpawnutychSentry, listOfSentry, rozliseniObrazovky, wallWidth)
                 pocetNepratel += (pocetSpawnutychSentry + pocetSpawnutychRammeru)
@@ -889,9 +889,8 @@ def Main():
                 case 3:
                     barvyPresPlate [3] = (0, 255, 0)
 
-
-        if barvyPresPlate == [(0, 255, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0),]:
-            spawnBossSequence = 1
+        if barvyPresPlate == [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0),]:
+            spawnBossSequnce = 1
 
     def spawnBoss():
         global bossSpawnSequenceFinished
@@ -952,14 +951,12 @@ def Main():
             okno.fill(wallColour)
             okno.blit(gameOverBanner, (rozliseniObrazovky[0]/2 - gameOverBanner.get_width()/2, rozliseniObrazovky[1]/2 - gameOverBanner.get_height()/2))
 
-
         DrawBossRoom() #zdi
 
         if bossSpawnSequenceFinished:
             for boss in grid[current_room[0],current_room[1]][6]:
                 boss.drawHPbar()
 
-        
         if bossDefeated:
             global i
             if i == 1:
@@ -1000,7 +997,6 @@ def Main():
         current_time = pygame.time.get_ticks()
         key_press = pygame.key.get_pressed()
         
-
         if runOneTime == 0:
             #stabilazes the rammer's player movement detection
             pohybHrace(hracRect, key_press)
