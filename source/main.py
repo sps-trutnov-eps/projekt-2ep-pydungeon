@@ -71,6 +71,10 @@ def Main():
     last_shot_time = 0
     pocetNepratel = 0
 
+
+
+
+
     leftTopWall = pygame.draw.rect(okno, wallColour, (0,0, wallWidth, rozliseniObrazovky[1]/2 - holeSize/2))
     topLeftWall = pygame.draw.rect(okno, wallColour, (0,0, rozliseniObrazovky[0]/2 - holeSize/2, wallWidth))
 
@@ -123,6 +127,10 @@ def Main():
     difficulty = 1
     score = 0
     i = 1
+
+
+
+
 
     class Boss:
         def __init__(self, difficulty):
@@ -684,6 +692,9 @@ def Main():
                 okno.blit(playerTextureDown, hracRect)
             case 0: #idle
                 okno.blit(playerTextureIdle, hracRect)
+                leftTopWallsemi_transparent = pygame.Surface((500, 500), flags=pygame.SRCALPHA)
+                leftTopWallsemi_transparent.fill(pygame.Color(200, 200, 200, 255))
+                okno.blit(leftTopWallsemi_transparent, (0,0))
 
     def KontrolaTeleportuAHrace(rectHrace):
         global runBossFight, runGame
